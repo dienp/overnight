@@ -63,6 +63,8 @@ pub struct Paths {
 /// Everything the popover shows, sent to it on every tick while it's open.
 #[derive(Clone, Debug, Default, Serialize)]
 pub struct Snapshot {
+    /// The app's version, shown with the Help link.
+    pub version: &'static str,
     pub armed: bool,
     pub holding: bool,
     pub sleep_disabled: bool,
@@ -117,7 +119,15 @@ pub struct Core {
 
 impl Core {
     pub fn new(paths: Paths) -> Self {
-        let settings = Settings::load(&paths.settings);
+        let mut settings = Settings::load(&paths.settings);
+        // Settings from before the first-run note existed: the log knows
+        // whether Keep awake tonight has ever worked.
+        if !settings.armed_before
+            && std::fs::read_to_string(&paths.log).is_ok_and(|l| l.contains("\"kind\":\"arm\""))
+        {
+            settings.armed_before = true;
+            let _ = settings.save(&paths.settings);
+        }
         Self {
             watcher: Watcher::new(&paths.home),
             snapshot: Snapshot {
@@ -194,6 +204,12 @@ pub fn arm(shared: &Shared) -> Result<(), String> {
     core.last_guard = None;
     core.error = None;
     core.last_battery_log = Some(Instant::now());
+    // The first-run note about the password prompt has done its job.
+    if !core.settings.armed_before {
+        core.settings.armed_before = true;
+        let _ = core.settings.save(&core.paths.settings);
+        core.snapshot.settings = core.settings.clone();
+    }
 
     let log = core.paths.log.clone();
     let until = core
@@ -473,6 +489,7 @@ To undo it, run sudo pmset -a disablesleep 0 in Terminal."
             scan: core.scan.clone(),
             scanning: core.scanning,
             settings: s,
+            version: env!("CARGO_PKG_VERSION"),
             last_guard: core.last_guard.clone(),
             error: core.error.clone(),
         };

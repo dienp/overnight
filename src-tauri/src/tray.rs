@@ -1,6 +1,9 @@
 //! The menu bar icon, its right-click menu, and the popover under it.
 
-use crate::monitor::{self, Kicker, Shared, Snapshot};
+use crate::{
+    links,
+    monitor::{self, Kicker, Shared, Snapshot},
+};
 use std::{
     sync::atomic::{AtomicBool, AtomicU64, AtomicU8, Ordering},
     thread,
@@ -34,9 +37,16 @@ pub struct TrayMenu {
 pub fn build(app: &AppHandle) -> tauri::Result<()> {
     let open = MenuItem::with_id(app, "open", "Open Overnight", true, None::<&str>)?;
     let toggle = MenuItem::with_id(app, "toggle", "Keep awake tonight", true, None::<&str>)?;
+    let help = MenuItem::with_id(app, "help", "Help", true, None::<&str>)?;
+    let report = MenuItem::with_id(app, "report", "Report a Problem…", true, None::<&str>)?;
+    let github = MenuItem::with_id(app, "github", "Overnight on GitHub", true, None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit", "Quit Overnight", true, None::<&str>)?;
     let separator = PredefinedMenuItem::separator(app)?;
-    let menu = Menu::with_items(app, &[&open, &toggle, &separator, &quit])?;
+    let separator2 = PredefinedMenuItem::separator(app)?;
+    let menu = Menu::with_items(
+        app,
+        &[&open, &toggle, &separator, &help, &report, &github, &separator2, &quit],
+    )?;
 
     TrayIconBuilder::with_id(TRAY_ID)
         .icon(Image::from_bytes(OFF)?)
@@ -47,6 +57,9 @@ pub fn build(app: &AppHandle) -> tauri::Result<()> {
         .on_menu_event(|app, event| match event.id().as_ref() {
             "open" => show_window(app),
             "toggle" => toggle_armed(app),
+            "help" => links::docs(None),
+            "report" => links::report_problem(&app.package_info().version.to_string()),
+            "github" => links::repo(),
             "quit" => app.exit(0),
             _ => {}
         })

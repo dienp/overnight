@@ -1,6 +1,6 @@
 // Stand-in for the Tauri backend when index.html is opened in a browser.
 // Never loaded inside the app. Query options: ?state=off|on|standby&theme=dark
-// &limit=waiting|missed&auto=off&phone=on
+// &limit=waiting|missed&auto=off&phone=on&firstrun (never armed before)
 // For screenshots: &shot (just the popover, on a transparent page), &tab=storage|log,
 // &scrollto=<element id>, &open=<details id>, &padend (room after the last section,
 // so even it can scroll to the top).
@@ -26,6 +26,7 @@ const listeners = [];
 
 const limitMode = params.get("limit"); // waiting | missed
 let snap = {
+  version: "0.1.0",
   armed: mode !== "off",
   holding: mode === "on",
   sleep_disabled: mode === "on",
@@ -83,6 +84,7 @@ let snap = {
     phone_alerts: params.get("phone") === "on",
     ntfy_url: params.get("phone") === "on" ? "https://ntfy.sh/overnight-k3m9q2xv7tpa" : "",
     phone_only_when_away: true,
+    armed_before: !params.has("firstrun"),
   },
   last_guard: null,
   error: null,
@@ -172,6 +174,8 @@ const handlers = {
   },
   reveal_log: () => undefined,
   quit: () => undefined,
+  open_docs: () => undefined,
+  report_problem: () => undefined,
 };
 
 export async function invoke(cmd, args) {

@@ -67,8 +67,12 @@ function render(s) {
   setText(arm, armPending ? "Waiting for your password…" : s.armed ? "Let it sleep" : "Keep awake tonight");
   arm.className = s.armed ? "btn quiet" : "btn primary";
   arm.disabled = armPending;
+  // Until Keep awake tonight has worked once, say why a password prompt is coming.
+  $("first-run").hidden = s.armed || armPending || s.settings.armed_before || Boolean(morning(s));
   $("error").hidden = !s.error;
   setText($("error"), s.error || "");
+  $("error-help").hidden = !s.error;
+  $("help").title = `Overnight ${s.version} documentation`;
 
   renderSettings();
   renderClaude(s.claude);
@@ -518,6 +522,12 @@ function bind() {
       next.focus();
     });
   }
+
+  // Help links name a section of the documentation; Rust opens the docs there.
+  document.addEventListener("click", (e) => {
+    const link = e.target.closest("[data-docs]");
+    if (link) invoke("open_docs", { section: link.dataset.docs || null });
+  });
 
   $("hero-note").addEventListener("click", () => {
     showTab("tonight");

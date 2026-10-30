@@ -26,8 +26,13 @@
           <span class="go">Show</span>
         </button>
         <button id="arm" class="btn primary">Keep awake tonight</button>
+        <p class="first-run" id="first-run" hidden>
+          macOS asks for your password once a night.
+          <button class="link" data-docs="lid-lock">How this works</button>
+        </p>
         <button class="link hero-hide" id="morning-hide" hidden>Hide this summary</button>
         <p id="error" class="error" role="alert" hidden></p>
+        <button class="link error-help" id="error-help" data-docs="lid-lock" hidden>How the lid lock works</button>
       </header>
 
       <nav class="tabs" role="tablist" aria-label="Sections">
@@ -65,6 +70,7 @@
           <div class="callout" id="limit" tabindex="-1" hidden>
             <strong id="limit-title"></strong>
             <p id="limit-text"></p>
+            <button class="link callout-more" data-docs="reset">More about usage limits</button>
             <details class="fix" id="limit-fix" hidden>
               <summary id="limit-fix-title">Make it continue by itself next time</summary>
               <ul class="steps">
@@ -133,6 +139,7 @@
                   <input type="text" id="ntfy-url" spellcheck="false" autocomplete="off" />
                   <button class="btn secondary small" id="copy-topic">Copy topic name</button>
                 </div>
+                <p class="sub">New to ntfy? <button class="link" data-docs="phone-alerts">How to set it up</button></p>
               </div>
               <label class="row">
                 <span class="label">
@@ -188,7 +195,10 @@
 
       <footer>
         <span id="helper"></span>
-        <button class="link" id="quit">Quit</button>
+        <span class="footer-links">
+          <button class="link" id="help" data-docs="">Help</button>
+          <button class="link" id="quit">Quit</button>
+        </span>
       </footer>
     </div>
   </body>

@@ -950,6 +950,50 @@ footer .link {
   font-size: 12px;
 }
 
+.footer-links {
+  display: flex;
+  gap: 14px;
+}
+
+/* Help links: small, in the accent colour; white on the hero's night skies. */
+.first-run {
+  margin: 8px 0 0;
+  font-size: 12px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.first-run .link,
+.error-help,
+.callout-more {
+  font-size: 12px;
+}
+
+.error-help {
+  display: block;
+  margin-top: 4px;
+}
+
+.callout-more {
+  margin-top: 6px;
+}
+
+.row.stack p.sub {
+  margin: 0;
+  font-size: 12px;
+}
+
+.row.stack p.sub .link {
+  font-size: 12px;
+}
+
+.hero[data-state="on"] .link,
+.hero[data-state="standby"] .link {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 /* Usage-limit callout */
 
 .callout {

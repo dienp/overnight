@@ -183,7 +183,7 @@
             for the idle time, which usually means it's finished or waiting for your reply.
           </p>
 
-          <h3>How the lid stays awake</h3>
+          <h3 id="lid-lock">How the lid stays awake</h3>
           <p>
             Pressing <span class="ui">Keep awake tonight</span> starts a small root shell script that runs <code>pmset</code>, the macOS
             command that controls sleep. For the rest of the night the app steers it with files in <code>~/Library/Application Support/dev.local.overnight/ctl/</code>, so it never
@@ -214,10 +214,10 @@
           </p>
 
           <div class="side">
-            <img src="assets/popover-phone.png" width="380" height="529" loading="lazy"
+            <img src="assets/popover-phone.png" width="380" height="551" loading="lazy"
               alt="The Phone section: Send alerts to my phone is on, with an ntfy topic address, a Copy topic name button, Only when I'm away, and Send a test alert." />
             <div>
-              <h3>Alerts on your phone</h3>
+              <h3 id="phone-alerts">Alerts on your phone</h3>
               <p>
                 Overnight can send its alerts to your phone through <a href="https://ntfy.sh">ntfy</a>, a free,
                 open-source push service. Turn on <span class="ui">Send alerts to my phone</span>, install the ntfy app, subscribe to
@@ -433,7 +433,9 @@ SDKROOT = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"</code></pre>
 
     <footer class="end">
       <p>
-        Overnight is on <a href="https://github.com/dienp/overnight">GitHub</a>. The screenshots show sample sessions.
+        Overnight is on <a href="https://github.com/dienp/overnight">GitHub</a>. Found a problem?
+        <a href="https://github.com/dienp/overnight/issues/new">Open an issue</a>, or use Report a Problem in
+        the menu bar icon's menu. The screenshots show sample sessions.
       </p>
     </footer>
   </body>

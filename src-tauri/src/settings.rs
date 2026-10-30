@@ -35,6 +35,9 @@ pub struct Settings {
     pub ntfy_url: String,
     /// Send to the phone only while the lid is closed or nobody is using the Mac.
     pub phone_only_when_away: bool,
+    /// Has Keep awake tonight ever worked? Until it has, the popover explains
+    /// the password prompt before it appears.
+    pub armed_before: bool,
 }
 
 impl Default for Settings {
@@ -53,6 +56,7 @@ impl Default for Settings {
             phone_alerts: false,
             ntfy_url: String::new(),
             phone_only_when_away: true,
+            armed_before: false,
         }
     }
 }

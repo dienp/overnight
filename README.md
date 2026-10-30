@@ -2,7 +2,7 @@
 
 Overnight is a macOS menu bar app that keeps a MacBook awake with the lid closed while Claude Code works. It lets the Mac sleep again once Claude goes idle, the battery runs low, the Mac gets hot or your stop time comes.
 
-[Read the documentation](https://dienp.github.io/overnight/). It runs on macOS 12 or later and is built with Tauri 2: Rust underneath, with a plain HTML, CSS and JavaScript popover.
+[Read the documentation](https://dienp.github.io/overnight/), or report a problem through [GitHub issues](https://github.com/dienp/overnight/issues) or Report a Problem in the menu bar icon's menu. It runs on macOS 12 or later and is built with Tauri 2: Rust underneath, with a plain HTML, CSS and JavaScript popover.
 
 <p align="center">
   <img src="docs/assets/popover-armed.png" width="380" alt="The Overnight popover keeping the Mac awake while Claude works">

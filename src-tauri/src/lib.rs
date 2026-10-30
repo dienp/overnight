@@ -1,6 +1,7 @@
 mod claude;
 mod events;
 mod helper;
+mod links;
 mod monitor;
 mod phone;
 mod settings;
@@ -94,6 +95,18 @@ fn quit(app: AppHandle) {
     app.exit(0);
 }
 
+/// The documentation, at one of its sections ("reset", "lid-lock", ...).
+#[tauri::command]
+fn open_docs(section: Option<String>) {
+    links::docs(section.as_deref());
+}
+
+/// A new GitHub issue with the app and macOS versions filled in.
+#[tauri::command]
+fn report_problem(app: AppHandle) {
+    links::report_problem(&app.package_info().version.to_string());
+}
+
 /// A fresh, hard-to-guess topic on the public ntfy server.
 #[tauri::command]
 fn new_ntfy_topic() -> String {
@@ -180,7 +193,9 @@ pub fn run() {
             popover_ready,
             hide_popover,
             new_ntfy_topic,
-            test_phone_alert
+            test_phone_alert,
+            open_docs,
+            report_problem
         ])
         .build(tauri::generate_context!())
         .expect("error while building Overnight");
