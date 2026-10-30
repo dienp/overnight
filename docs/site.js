@@ -7,7 +7,11 @@ const name = document.getElementById("phase-name");
 const links = [...bar.querySelectorAll("nav a[href^='#']")];
 const sections = [...document.querySelectorAll("[data-phase]")];
 
+let shown = null;
+
 function show(section) {
+  if (section === shown) return;
+  shown = section;
   bar.dataset.phase = section.dataset.phase;
   time.textContent = section.dataset.time;
   name.textContent = section.dataset.name;
@@ -17,12 +21,16 @@ function show(section) {
   }
 }
 
-// The chapter under the bar is the one that counts.
-const watcher = new IntersectionObserver(
-  (entries) => {
-    for (const e of entries) if (e.isIntersecting) show(e.target);
-  },
-  { rootMargin: "-60px 0px -85% 0px" },
-);
-for (const s of sections) watcher.observe(s);
-show(sections[0]);
+// The chapter under the bar is the last one whose top has passed it. Reading
+// six positions per scroll event is cheap, and unlike an intersection
+// observer it gives the right answer after a jump to an anchor.
+function update() {
+  const line = bar.offsetHeight + 8;
+  let current = sections[0];
+  for (const s of sections) if (s.getBoundingClientRect().top <= line) current = s;
+  show(current);
+}
+
+addEventListener("scroll", update, { passive: true });
+addEventListener("resize", update);
+update();

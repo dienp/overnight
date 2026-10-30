@@ -2,7 +2,8 @@
 // Never loaded inside the app. Query options: ?state=off|on|standby&theme=dark
 // &limit=waiting|missed&auto=off&phone=on
 // For screenshots: &shot (just the popover, on a transparent page), &tab=storage|log,
-// &scrollto=<element id>, &open=<details id>.
+// &scrollto=<element id>, &open=<details id>, &padend (room after the last section,
+// so even it can scroll to the top).
 
 const params = new URLSearchParams(location.search);
 const mode = params.get("state") || "on";
@@ -12,6 +13,7 @@ document.body.style.cssText = params.has("shot")
   : "display:grid;place-items:center;min-height:100vh;background:#8e8e93";
 document.querySelector(".panel").style.cssText = "width:380px;height:620px";
 if (params.get("tab")) localStorage.setItem("tab", params.get("tab"));
+if (params.has("padend")) document.querySelector("main").style.paddingBottom = "240px";
 // After the first render: open a fold and scroll something into view.
 setTimeout(() => {
   if (params.get("open")) document.getElementById(params.get("open")).open = true;

@@ -46,9 +46,8 @@
             Overnight
           </h1>
           <p class="lede">
-            Close your MacBook and let Claude Code keep working. Overnight keeps the Mac awake while Claude has
-            work to do, then lets it sleep once Claude goes idle, the battery runs low, the Mac gets hot or
-            morning comes.
+            Overnight keeps your MacBook awake with the lid closed while Claude Code has work to do, then lets
+            it sleep once Claude goes idle, the battery runs low, the Mac gets hot or morning comes.
           </p>
           <p class="actions">
             <a class="button" href="#build">Build it</a>
@@ -113,14 +112,14 @@
         </header>
         <div class="column">
           <p>
-            Click the moon in the menu bar and press Keep awake tonight. macOS asks for your password once,
+            Click the moon in the menu bar and press <span class="ui">Keep awake tonight</span>. macOS asks for your password once,
             because only an administrator can stop a MacBook from sleeping when its lid closes. After that you
             can close the lid and walk away.
           </p>
 
-          <h3 id="status"><span class="num" aria-hidden="true">1</span> The top of the popover says what the Mac will do</h3>
+          <h3 id="status"><a class="num" href="#top" title="Marker 1 on the popover" aria-label="Marker 1 on the popover">1</a> The top of the popover says what the Mac will do</h3>
           <p>
-            It's a full night sky while Overnight is keeping the Mac awake, and an unlit one while Overnight is
+            The top shows a full night sky while Overnight is keeping the Mac awake, and an unlit one while Overnight is
             armed but letting it sleep because Claude is idle. The morning after a run it turns to dawn and shows
             how the night went. When something needs you, such as a session that stopped on a usage limit, a
             note under the headline says so and takes you to it.
@@ -143,18 +142,19 @@
             </div>
           </figure>
 
-          <h3 id="modes"><span class="num" aria-hidden="true">2</span> Two ways to stay awake</h3>
+          <h3 id="modes"><a class="num" href="#top" title="Marker 2 on the popover" aria-label="Marker 2 on the popover">2</a> Two ways to stay awake</h3>
           <p>
-            While Claude works keeps the Mac awake while your Claude Code sessions are busy, and lets it sleep
-            once Claude has been idle for 15 minutes. You can set that anywhere from 1 to 240 minutes with Claude
-            is idle after. If you close the lid while Claude is already idle, the Mac sleeps straight away.
+            <span class="ui">While Claude works</span> keeps the Mac awake while your Claude Code sessions are busy, and lets it sleep
+            once Claude has been idle for 15 minutes. You can set that anywhere from 1 to 240 minutes with the
+            <span class="ui">Claude is idle after</span> setting. If you close the lid while Claude is already idle, the Mac sleeps
+            straight away.
           </p>
-          <p>All night keeps the Mac awake until your stop time, whatever Claude is doing.</p>
+          <p><span class="ui">All night</span> keeps the Mac awake until your stop time, whatever Claude is doing.</p>
 
-          <h3 id="stop"><span class="num" aria-hidden="true">4</span> A time to stop</h3>
+          <h3 id="stop"><a class="num" href="#top" title="Marker 4 on the popover" aria-label="Marker 4 on the popover">4</a> A time to stop</h3>
           <p>
-            Stop at ends the run at 8:00 AM unless you change it or turn it off. A run also ends early when one
-            of the guards below steps in, or when you press Let it sleep.
+            The <span class="ui">Stop at</span> time ends the run at 8:00 AM unless you change it or turn it off. A run also ends early
+            when one of the guards below steps in, or when you press <span class="ui">Let it sleep</span>.
           </p>
         </div>
       </section>
@@ -165,7 +165,7 @@
           <p class="clock" aria-hidden="true">11 PM</p>
         </header>
         <div class="column">
-          <h3 id="working"><span class="num" aria-hidden="true">5</span> How Overnight knows Claude is working</h3>
+          <h3 id="working"><a class="num" href="#top" title="Marker 5 on the popover" aria-label="Marker 5 on the popover">5</a> How Overnight knows Claude is working</h3>
           <p>
             Claude counts as working when a Claude Code process is running and one of two things is true: a
             session under <code>~/.claude/projects</code> recorded something within the idle time, or Claude and
@@ -179,14 +179,14 @@
           </p>
           <p>
             The session list shows each one as working, idle, paused on a usage limit or stopped after one.
-            Notify me when Claude goes idle sends a notification when Claude has had no activity for the idle
-            time, which usually means it's finished or waiting for your reply.
+            The <span class="ui">Notify me when Claude goes idle</span> switch sends a notification when Claude has had no activity
+            for the idle time, which usually means it's finished or waiting for your reply.
           </p>
 
           <h3>How the lid stays awake</h3>
           <p>
-            Pressing Keep awake tonight starts a small root shell script. For the rest of the night the app
-            steers it with files in <code>~/Library/Application Support/dev.local.overnight/ctl/</code>, so it never
+            Pressing <span class="ui">Keep awake tonight</span> starts a small root shell script that runs <code>pmset</code>, the macOS
+            command that controls sleep. For the rest of the night the app steers it with files in <code>~/Library/Application Support/dev.local.overnight/ctl/</code>, so it never
             needs your password again that night.
           </p>
           <figure class="flow" aria-label="How Overnight holds the lid lock">
@@ -213,20 +213,20 @@
             somewhere with airflow.
           </p>
 
-          <h3>Alerts on your phone</h3>
           <div class="side">
-            <img src="assets/popover-phone.png" width="380" height="620" loading="lazy"
+            <img src="assets/popover-phone.png" width="380" height="529" loading="lazy"
               alt="The Phone section: Send alerts to my phone is on, with an ntfy topic address, a Copy topic name button, Only when I'm away, and Send a test alert." />
             <div>
+              <h3>Alerts on your phone</h3>
               <p>
                 Overnight can send its alerts to your phone through <a href="https://ntfy.sh">ntfy</a>, a free,
-                open-source push service. Turn on Send alerts to my phone, install the ntfy app, subscribe to the
-                topic Overnight made for you, and press Send a test alert. On an iPhone, Copy topic name and
-                Universal Clipboard save you typing it.
+                open-source push service. Turn on <span class="ui">Send alerts to my phone</span>, install the ntfy app, subscribe to
+                the topic Overnight made for you, and press <span class="ui">Send a test alert</span>. On an iPhone,
+                <span class="ui">Copy topic name</span> and Universal Clipboard save you typing it.
               </p>
               <p>
                 Alerts never name a session or project. Anyone who knows an ntfy.sh topic name can read it, so
-                keep the random one or use your own ntfy server. With Only when I'm away on, alerts go to your
+                keep the random one or use your own ntfy server. With <span class="ui">Only when I'm away</span> on, alerts go to your
                 phone only while the lid is closed or nobody has touched the keyboard or mouse for 5 minutes.
               </p>
               <p>
@@ -250,11 +250,11 @@
             about 30 minutes stops at "Press enter to continue".
           </p>
 
-          <h3 id="limits"><span class="num" aria-hidden="true">3</span> Overnight waits for the reset</h3>
+          <h3 id="limits"><a class="num" href="#top" title="Marker 3 on the popover" aria-label="Marker 3 on the popover">3</a> Overnight waits for the reset</h3>
           <p>
             In While Claude works mode, Overnight keeps the Mac awake until 10 minutes after a pending reset,
-            even though Claude looks idle in the meantime. Turn off Wait for usage-limit resets if you'd rather
-            the Mac slept. All night mode stays awake anyway, unless your stop time comes first, and the popover
+            even though Claude looks idle in the meantime. Turn off <span class="ui">Wait for usage-limit resets</span> if you'd
+            rather the Mac slept. All night mode stays awake anyway, unless your stop time comes first, and the popover
             warns you when it will.
           </p>
           <figure class="pair">
@@ -288,7 +288,7 @@
                 </tr>
                 <tr>
                   <td>Claude desktop app, Code tab</td>
-                  <td>Tick Auto-continue when limits reset on the session's usage-limit card</td>
+                  <td>Tick <span class="ui">Auto-continue when limits reset</span> on the session's usage-limit card</td>
                 </tr>
               </tbody>
             </table>
@@ -326,11 +326,11 @@
             </div>
           </div>
 
-          <h3>The log</h3>
           <div class="side reverse">
             <img src="assets/popover-log.png" width="380" height="620" loading="lazy"
               alt="The Log tab: a summary of the last run, then each event of the night in order, from arming at 11:05 PM to reaching the 8:00 AM stop time." />
             <div>
+              <h3>The log</h3>
               <p>
                 The Log tab lists the night in order: when you armed it, when the lid closed and opened, when the
                 Mac switched to battery, when Claude started and stopped working, usage limits, guards and a
@@ -340,18 +340,18 @@
             </div>
           </div>
 
-          <h3>Disk space</h3>
           <div class="side">
             <img src="assets/popover-storage.png" width="380" height="620" loading="lazy"
               alt="The Storage tab: free space, a warning threshold of 30 GB, and a list of folders taking space such as Xcode DerivedData and simulators, with an Ask Claude to clean up button." />
             <div>
+              <h3>Disk space</h3>
               <p>
                 Long Claude runs fill disks with builds, caches and worktrees. Overnight warns you when free space
                 drops below 30 GB and measures the usual culprits, such as Xcode DerivedData, simulators, package
                 caches and Claude worktrees.
               </p>
               <p>
-                Ask Claude to clean up opens Claude Code in Terminal with your cleanup request, so you can watch it
+                The <span class="ui">Ask Claude to clean up</span> button opens Claude Code in Terminal with your cleanup request, so you can watch it
                 and answer its questions. Overnight never deletes anything itself.
               </p>
             </div>
@@ -398,16 +398,17 @@ SDKROOT = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"</code></pre>
           </ul>
 
           <h3>Where it keeps things</h3>
+          <p>Everything lives in <code>~/Library/Application Support/dev.local.overnight/</code>.</p>
           <div class="table-wrap">
-            <table>
+            <table class="files">
               <thead>
-                <tr><th scope="col">In <code>~/Library/Application Support/dev.local.overnight/</code></th><th scope="col">What it holds</th></tr>
+                <tr><th scope="col">File</th><th scope="col">What it holds</th></tr>
               </thead>
               <tbody>
                 <tr><td><code>settings.json</code></td><td>Your settings</td></tr>
                 <tr><td><code>events.jsonl</code></td><td>The log, trimmed to about 2 MB</td></tr>
                 <tr><td><code>ctl/</code></td><td>The helper's <code>hold</code>, <code>release</code> and <code>pid</code> files</td></tr>
-                <tr><td><code>cleanup.command</code></td><td>The Terminal script Ask Claude to clean up runs</td></tr>
+                <tr><td><code>cleanup.command</code></td><td>The script the <span class="ui">Ask Claude to clean up</span> button runs</td></tr>
               </tbody>
             </table>
           </div>
@@ -416,13 +417,14 @@ SDKROOT = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"</code></pre>
           <p>
             Overnight reads the battery, the lid and the sleep setting directly from macOS and runs no commands on
             its regular checks. It checks every 10 seconds while it's keeping the Mac awake or the popover is open,
-            and every 30 seconds otherwise. The popover's page closes a few seconds after the popover hides, so with
-            it closed the app uses around 20 to 30 MB.
+            and every 30 seconds otherwise. Overnight unloads the popover a few seconds after you close it, so while
+            it's closed the app uses around 20 to 30 MB.
           </p>
 
           <h3>Things to know</h3>
           <p>
-            On a managed work Mac, check that your IT policy allows running <code>pmset</code> as an administrator.
+            On a managed work Mac, check that your IT policy allows running <code>pmset</code>, the macOS command that
+            controls sleep, as an administrator.
             Notifications ask for permission the first time the app sends one.
           </p>
         </div>
@@ -431,8 +433,7 @@ SDKROOT = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"</code></pre>
 
     <footer class="end">
       <p>
-        Overnight is on <a href="https://github.com/dienp/overnight">GitHub</a>. The screenshots use sample sessions,
-        not real ones.
+        Overnight is on <a href="https://github.com/dienp/overnight">GitHub</a>. The screenshots show sample sessions.
       </p>
     </footer>
   </body>

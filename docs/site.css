@@ -8,7 +8,6 @@
   --dusk-a: #2a2d3b;
   --dusk-b: #3f4459;
   --rose: #6b4a7a;
-  --dawn-mid: #7a4f66;
   --dawn: #c9875a;
   --moon: #f7d680;
 
@@ -93,7 +92,7 @@ a {
 
 .intro :focus-visible,
 .opener :focus-visible,
-.bar:not([data-phase="day"]) :focus-visible {
+.bar:not([data-phase="day"]):not([data-phase="dawn"]) :focus-visible {
   outline-color: var(--moon);
 }
 
@@ -108,6 +107,11 @@ pre {
   padding: 1px 5px;
   border-radius: 4px;
   overflow-wrap: anywhere;
+}
+
+/* The name of a button, switch or setting, wherever the text mentions one. */
+.ui {
+  font-weight: 600;
 }
 
 .skip {
@@ -151,7 +155,8 @@ pre {
 }
 
 .bar[data-phase="dawn"] {
-  background: #7a5266;
+  background: var(--dawn);
+  color: var(--night-a);
 }
 
 .bar[data-phase="day"] {
@@ -186,6 +191,11 @@ pre {
 .bar[data-phase="day"] .moon-body,
 .bar[data-phase="day"] .moon-star {
   fill: #c69a2e;
+}
+
+.bar[data-phase="dawn"] .moon-body,
+.bar[data-phase="dawn"] .moon-star {
+  fill: var(--night-a);
 }
 
 .phase {
@@ -358,6 +368,10 @@ pre {
   box-shadow: 0 0 0 5px rgba(247, 214, 128, 0.22), 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
+a.num:hover {
+  box-shadow: 0 0 0 4px rgba(247, 214, 128, 0.4);
+}
+
 .marker:hover {
   box-shadow: 0 0 0 7px rgba(247, 214, 128, 0.35), 0 4px 12px rgba(0, 0, 0, 0.35);
 }
@@ -440,10 +454,14 @@ pre {
   background: linear-gradient(180deg, var(--night-b) 0%, #4f3d70 60%, var(--rose) 100%);
 }
 
-/* Dawn: the text sits on dawn rose; the amber is a low horizon band below it. */
+/* Dawn: the night has turned amber, so the type turns to night ink. */
 [data-phase="dawn"] > .opener {
-  background: linear-gradient(180deg, var(--rose), var(--dawn-mid));
-  box-shadow: inset 0 -10px 0 var(--dawn);
+  background: linear-gradient(180deg, #c48468, #d49464);
+  color: var(--night-a);
+}
+
+[data-phase="dawn"] > .opener .clock {
+  color: var(--night-a);
 }
 
 [data-phase="day"] > .opener {
@@ -538,6 +556,14 @@ th {
   font-weight: 600;
 }
 
+/* File names size to their content and never break inside a name; the
+   description column takes the wrapping. */
+.files td:first-child,
+.files th:first-child {
+  width: 1%;
+  white-space: nowrap;
+}
+
 /* Screenshots. Figures may run wider than the text column. */
 
 .trio,
@@ -586,12 +612,20 @@ th {
   --wide: 900px;
   display: grid;
   grid-template-columns: 300px minmax(0, 1fr);
-  align-items: center;
+  align-items: start;
   gap: 40px;
+}
+
+.side h3:first-child {
+  margin-top: 0;
 }
 
 .side img {
   width: 300px;
+}
+
+.side.reverse {
+  grid-template-columns: minmax(0, 1fr) 300px;
 }
 
 .side.reverse img {
@@ -720,7 +754,7 @@ th {
 }
 
 @media (max-width: 700px) {
-  .phase {
+  #phase-name {
     display: none;
   }
 

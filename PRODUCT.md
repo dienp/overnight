@@ -38,7 +38,9 @@ Capabilities today:
 - Keep awake with the lid closed, in two modes: **While Claude works** and **All night**. Each has an optional **Stop at** time.
 - Guards: battery floor (sleep below 10% by default), heat, and stop time. The root helper also has its own failsafe at 8% battery.
 - Claude session list with status: *working*, *idle*, *paused* (usage limit, waiting for the reset), *stopped* (didn't continue after a reset), *not running*.
-- Usage limits: stays awake through a reset, notifies if Claude didn't continue, and shows how to resume and how to turn on auto-continue.
+- Usage limits: stays awake through a reset (Wait for usage-limit resets, on by default), notifies if Claude didn't continue, and shows how to resume and how to turn on auto-continue.
+- Morning summary: the first open after a run turns the popover's top into "Last night": the run's times, how it ended, Claude's working time, time held awake and the battery change, plus any sessions that need the user.
+- Outside changes: if something else turns sleep back on mid-hold, the helper puts the hold back within 30 seconds and the user is told; if something disables sleep outside a run, the user is told the guards aren't watching.
 - Storage: free-space warning, a scan of common space hogs, and **Ask Claude to clean up**, which opens Claude Code in Terminal.
 - Log: a timeline of each night with a summary of time held awake, time Claude was busy, and the battery change.
 - Phone alerts through ntfy: the same notifications as on the Mac, sent only while the user is away by default (lid closed, or no input for 5 minutes). They never name a session or project. Claude's own phone push needs Remote Control, which organizations can turn off (the author's has), so Overnight doesn't rely on it.
@@ -57,10 +59,11 @@ Terminology (use consistently):
 - **Keep awake tonight** / **Let it sleep** for the main action.
 
 Open decisions:
-- Distribution for a public release: code signing, notarization, the update channel, and the minimum macOS version (currently 12).
+- Distribution for a public release: code signing, notarization, the update channel, and the minimum macOS version (currently 12). The code is public at github.com/dienp/overnight, with documentation at dienp.github.io/overnight; users build it themselves for now.
+- A license for the public repository (none chosen yet).
 - First-run onboarding for people who aren't the author.
 - Phone alerts: whether to support private ntfy servers that need an access token (it would belong in the Keychain), and whether to offer other services such as Pushover.
-- An accessibility standard. Known gap: white text on the dark-mode accent button is 3.4:1.
+- An accessibility standard. The popover now meets WCAG AA contrast in both themes, has a visible focus ring, announces status changes and links its tabs to their panels; nothing formal has been decided beyond that.
 
 ## Brand Commitments
 
