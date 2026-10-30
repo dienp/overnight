@@ -284,8 +284,11 @@ mod tests {
             .map(|l| l.trim_end().ends_with("Yes"));
         assert_eq!(lid_closed(), lid);
         assert_eq!(sleep_disabled(), sleep_disabled_pmset());
-        // The HID system counts up from the last input; it always exists.
-        assert!(input_idle().is_some());
+        // The HID system counts up from the last input on a real Mac; CI's
+        // virtual Macs may not have one.
+        if std::env::var_os("CI").is_none() {
+            assert!(input_idle().is_some());
+        }
     }
 
     #[test]

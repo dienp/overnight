@@ -1,0 +1,102 @@
+# Every push to main that changes the app (a merged pull request or a direct
+# push) makes a release: the version is bumped and committed back, the commit
+# is tagged, the app is built for Apple silicon and Intel, and the zip is
+# published on the Releases page. Docs-only and README-only changes don't
+# release. Put [minor] or [major] in a commit message for a bigger bump, or
+# [skip release] to skip one.
+
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "docs/**"
+      - "**.md"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# One release at a time, in order.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: ${{ !contains(github.event.head_commit.message, '[skip release]') }}
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Rust for both Mac architectures
+        run: rustup target add aarch64-apple-darwin x86_64-apple-darwin
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - run: npm ci
+
+      - name: Work out the version
+        id: version
+        run: node scripts/release-version.mjs
+
+      - name: Test
+        run: |
+          cargo test --manifest-path src-tauri/Cargo.toml
+          sh scripts/test-helper.sh
+
+      - name: Build the universal app
+        run: npm run tauri -- build --target universal-apple-darwin --bundles app
+
+      - name: Package
+        run: |
+          app=src-tauri/target/universal-apple-darwin/release/bundle/macos/Overnight.app
+          codesign --verify --deep --strict "$app"
+          lipo -archs "$app/Contents/MacOS/overnight"
+          ditto -c -k --keepParent "$app" Overnight-macos.zip
+
+      - name: Commit the version and tag it
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git diff --quiet || git commit -am "Release v$VERSION [skip release]"
+          git tag "v$VERSION"
+          # Both or neither. If main moved while this built, the push fails and
+          # the run queued behind this one releases the newer code instead.
+          git push --atomic origin HEAD:main "v$VERSION"
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          PREVIOUS: ${{ steps.version.outputs.previous }}
+        run: |
+          {
+            echo "## Install"
+            echo
+            echo "Download **Overnight-macos.zip**, open it, and move Overnight to your Applications folder. It runs on macOS 12 or later, on Apple silicon and Intel Macs."
+            echo
+            echo "Overnight isn't notarized by Apple yet, so the first time you open it macOS says it can't check it for malicious software. Open System Settings, go to Privacy & Security, and click Open Anyway next to Overnight. On macOS 14 and earlier you can instead Control-click the app and choose Open."
+            echo
+            echo "## Changes"
+            echo
+            if [ -n "$PREVIOUS" ]; then
+              git log "$PREVIOUS..HEAD" --no-merges --format='- %s' | grep -v '\[skip release\]' || true
+            else
+              echo "- First release."
+            fi
+          } > notes.md
+          gh release create "v$VERSION" Overnight-macos.zip --title "Overnight $VERSION" --notes-file notes.md --latest

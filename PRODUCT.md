@@ -59,7 +59,7 @@ Terminology (use consistently):
 - **Keep awake tonight** / **Let it sleep** for the main action.
 
 Open decisions:
-- Distribution for a public release: code signing, notarization, the update channel, and the minimum macOS version (currently 12). The code is public at github.com/dienp/overnight, with documentation at dienp.github.io/overnight; users build it themselves for now.
+- Distribution: releases are built and published automatically on every push to main that changes the app (GitHub Releases, universal, ad-hoc signed, not notarized; users approve the first open in Privacy & Security). Still open: an Apple Developer ID for signing and notarization, an in-app update check, and the minimum macOS version (currently 12).
 - A license for the public repository (none chosen yet).
 - First-run onboarding for people who aren't the author.
 - Phone alerts: whether to support private ntfy servers that need an access token (it would belong in the Keychain), and whether to offer other services such as Pushover.

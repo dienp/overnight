@@ -25,7 +25,8 @@ function show(section) {
 // six positions per scroll event is cheap, and unlike an intersection
 // observer it gives the right answer after a jump to an anchor.
 function update() {
-  const line = bar.offsetHeight + 8;
+  // Past the 12px of scroll padding that anchor jumps stop at, with room to spare.
+  const line = bar.offsetHeight + 24;
   let current = sections[0];
   for (const s of sections) if (s.getBoundingClientRect().top <= line) current = s;
   show(current);
@@ -34,3 +35,14 @@ function update() {
 addEventListener("scroll", update, { passive: true });
 addEventListener("resize", update);
 update();
+
+// The download button always fetches the newest release; say which one it is.
+// Without the network, the text stays "The latest version".
+fetch("https://api.github.com/repos/dienp/overnight/releases/latest")
+  .then((r) => (r.ok ? r.json() : null))
+  .then((release) => {
+    const tag = release?.tag_name;
+    if (!tag) return;
+    for (const el of document.querySelectorAll("[data-version]")) el.textContent = `Version ${tag.replace(/^v/, "")}`;
+  })
+  .catch(() => {});

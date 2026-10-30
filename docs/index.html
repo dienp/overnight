@@ -30,7 +30,7 @@
         <a href="#night">Night</a>
         <a href="#reset">Reset</a>
         <a href="#morning">Morning</a>
-        <a href="#build">Build</a>
+        <a href="#install">Install</a>
         <a href="https://github.com/dienp/overnight">GitHub</a>
       </nav>
     </header>
@@ -50,10 +50,10 @@
             it sleep once Claude goes idle, the battery runs low, the Mac gets hot or morning comes.
           </p>
           <p class="actions">
-            <a class="button" href="#build">Build it</a>
+            <a class="button" href="https://github.com/dienp/overnight/releases/latest/download/Overnight-macos.zip">Download for Mac</a>
             <a class="button ghost" href="https://github.com/dienp/overnight">View on GitHub</a>
           </p>
-          <p class="meta">A free menu bar app for macOS 12 or later, built with Tauri and Rust.</p>
+          <p class="meta"><span data-version>The latest version</span>, free, for macOS 12 or later on Apple silicon and Intel Macs.</p>
           <figure class="menubar">
             <span class="menubar-strip">
               <img src="assets/tray-off.png" width="18" height="18" alt="Hollow moon" />
@@ -359,23 +359,39 @@
         </div>
       </section>
 
-      <section class="chapter" id="build" data-time="Daytime" data-name="Build and install" data-phase="day">
+      <section class="chapter" id="install" data-time="Daytime" data-name="Install" data-phase="day">
         <header class="opener">
-          <h2>Build and install</h2>
+          <h2>Install</h2>
           <p class="clock" aria-hidden="true">Day</p>
         </header>
         <div class="column">
           <p>
-            Overnight isn't signed or notarized yet, so you build it yourself. You need Node and Rust; if Rust came
-            from Homebrew's keg-only <code>rustup</code>, the npm scripts find it.
+            <a href="https://github.com/dienp/overnight/releases/latest/download/Overnight-macos.zip">Download Overnight</a>, open the zip and move Overnight to your Applications folder.
+            <span data-version>The latest version</span> runs on macOS 12 or later, on Apple silicon and Intel Macs.
+            To start it at login, add it under System Settings, General, Login Items.
+          </p>
+          <p>
+            Overnight isn't notarized by Apple yet, so the first time you open it, macOS says it can't check it for
+            malicious software. Open System Settings, go to Privacy &amp; Security and click
+            <span class="ui">Open Anyway</span> next to Overnight. On macOS 14 and earlier you can Control-click the app and
+            choose <span class="ui">Open</span> instead. You only do this once.
+          </p>
+          <p>
+            Every change to the app that lands on the main branch is published as a new version on the
+            <a href="https://github.com/dienp/overnight/releases">Releases page</a>. To update, quit Overnight, then
+            download and replace it the same way.
+          </p>
+
+          <h3 id="build">Build it yourself</h3>
+          <p>
+            You need Node and Rust; if Rust came from Homebrew's keg-only <code>rustup</code>, the npm scripts find it.
           </p>
 <pre><code>git clone https://github.com/dienp/overnight.git
 cd overnight
 npm install
 npm run build</code></pre>
           <p>
-            That makes <code>src-tauri/target/release/bundle/macos/Overnight.app</code>. Copy it to Applications, and
-            add it under System Settings, General, Login Items if you want it at login. <code>npm run dev</code> runs it
+            That makes <code>src-tauri/target/release/bundle/macos/Overnight.app</code>. <code>npm run dev</code> runs it
             with hot reload while you work on it.
           </p>
           <p>
