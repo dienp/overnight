@@ -1,6 +1,8 @@
-/* Overnight documentation. The app's world owns the frame (the night sky,
-   the moon-gold markers, section openers that move from dusk to daylight);
-   the reading column inside it stays calm. */
+/* Overnight documentation, for anyone. The app's night owns the frame (the
+   sky, the moon, chapter openers that move from dusk to daylight) and the
+   drawings; the reading column stays calm. Every drawing's resting state is
+   its last frame, so without JavaScript or with reduced motion the page is
+   complete and still. */
 
 :root {
   --night-a: #23264f;
@@ -10,40 +12,40 @@
   --rose: #6b4a7a;
   --dawn: #c9875a;
   --moon: #f7d680;
+  --moon-ink: #a87a14;
 
   --ground: #f7f7fa;
-  --card: #ffffff;
   --ink: #1c1c1e;
   --muted: #5d5d66;
   --line: rgba(28, 28, 30, 0.12);
   --accent: #5856d6;
-  --code-ground: #1d2040;
-  --code-ink: #e9e9f6;
-  --inline-code: rgba(88, 86, 214, 0.09);
   --day: #e8ebf4;
   --bar-day: rgba(247, 247, 250, 0.92);
-  --shadow: drop-shadow(0 18px 34px rgba(20, 22, 50, 0.28));
+  --count: #23264f;
+  --lift: drop-shadow(0 14px 24px rgba(20, 22, 50, 0.22));
 
   --bar-h: 52px;
   --measure: 68ch;
   --gutter: 24px;
+  --out: cubic-bezier(0.16, 1, 0.3, 1);
   color-scheme: light;
+  scrollbar-color: #b4b7d4 transparent;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --ground: #141418;
-    --card: #1e1e24;
     --ink: #ececf1;
     --muted: #a3a3ab;
     --line: rgba(255, 255, 255, 0.12);
     --accent: #a5a3ff;
-    --code-ground: #1a1c34;
-    --inline-code: rgba(165, 163, 255, 0.14);
+    --moon-ink: #f7d680;
     --day: #22242e;
     --bar-day: rgba(20, 20, 24, 0.92);
-    --shadow: drop-shadow(0 18px 34px rgba(0, 0, 0, 0.55));
+    --count: #33366a;
+    --lift: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.5));
     color-scheme: dark;
+    scrollbar-color: #4a4d6a transparent;
   }
 }
 
@@ -69,9 +71,15 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-img {
-  max-width: 100%;
-  height: auto;
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p,
+li {
+  text-wrap: pretty;
 }
 
 a {
@@ -90,28 +98,22 @@ a {
   border-radius: 4px;
 }
 
-.intro :focus-visible,
+.hero :focus-visible,
 .opener :focus-visible,
 .bar:not([data-phase="day"]):not([data-phase="dawn"]) :focus-visible {
   outline-color: var(--moon);
 }
 
-code,
-pre {
-  font-family: ui-monospace, "SF Mono", Menlo, monospace;
-}
-
-:not(pre) > code {
-  font-size: 0.86em;
-  background: var(--inline-code);
-  padding: 1px 5px;
-  border-radius: 4px;
-  overflow-wrap: anywhere;
-}
-
 /* The name of a button, switch or setting, wherever the text mentions one. */
 .ui {
   font-weight: 600;
+}
+
+.defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
 }
 
 .skip {
@@ -175,26 +177,18 @@ pre {
   white-space: nowrap;
 }
 
-.brand .moon {
+.moon {
   width: 22px;
   height: 22px;
-}
-
-.moon-body {
   fill: var(--moon);
+  flex: none;
 }
 
-.moon-star {
-  fill: var(--moon);
+.bar[data-phase="day"] .moon {
+  fill: var(--moon-ink);
 }
 
-.bar[data-phase="day"] .moon-body,
-.bar[data-phase="day"] .moon-star {
-  fill: #c69a2e;
-}
-
-.bar[data-phase="dawn"] .moon-body,
-.bar[data-phase="dawn"] .moon-star {
+.bar[data-phase="dawn"] .moon {
   fill: var(--night-a);
 }
 
@@ -230,54 +224,80 @@ pre {
   text-decoration: underline;
 }
 
-/* First viewport: the popover, annotated. */
-
-.intro {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 380px minmax(220px, 280px);
-  align-items: center;
-  gap: 48px;
-  min-height: min(calc(100vh - var(--bar-h)), 860px);
-  padding: 56px max(var(--gutter), calc((100vw - 1180px) / 2)) 64px;
-  color: #fff;
-  background: linear-gradient(165deg, var(--dusk-a) 0%, var(--night-a) 48%, var(--night-b) 100%);
+.bar-download {
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: var(--moon);
+  color: var(--night-a);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
 }
 
-.intro h1 {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin: 0 0 18px;
-  font-size: clamp(44px, 5.4vw, 72px);
-  line-height: 1;
+.bar[data-phase="dawn"] .bar-download {
+  background: var(--night-a);
+  color: var(--moon);
+}
+
+.bar-download:hover,
+.button:hover {
+  filter: brightness(1.06);
+}
+
+/* First viewport: the answer on the left, the night on the right. */
+
+.hero {
+  --bleed: max(var(--gutter), calc((100vw - 1240px) / 2));
+  display: grid;
+  grid-template-columns: minmax(0, 30rem) minmax(0, 1fr);
+  align-items: end;
+  gap: clamp(24px, 4vw, 56px);
+  padding: clamp(32px, 4vw, 56px) var(--bleed) 0;
+  overflow: hidden;
+  color: #fff;
+  background:
+    radial-gradient(1.5px 1.5px at 8% 14%, rgba(255, 255, 255, 0.75), transparent),
+    radial-gradient(1px 1px at 22% 6%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1.5px 1.5px at 34% 18%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 4% 46%, rgba(255, 255, 255, 0.55), transparent),
+    radial-gradient(1.5px 1.5px at 30% 88%, rgba(255, 255, 255, 0.45), transparent),
+    radial-gradient(1px 1px at 16% 96%, rgba(255, 255, 255, 0.5), transparent),
+    linear-gradient(165deg, var(--dusk-a) 0%, var(--night-a) 52%, var(--night-b) 100%);
+}
+
+.hero-text {
+  align-self: center;
+  padding-bottom: 56px;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(40px, 5vw, 68px);
+  line-height: 1.04;
   letter-spacing: -0.03em;
 }
 
-.intro h1 .moon {
-  width: 0.82em;
-  height: 0.82em;
-  flex: none;
-}
-
 .lede {
-  margin: 0;
-  max-width: 34ch;
+  margin: 22px 0 0;
+  max-width: 30em;
   font-size: 20px;
   line-height: 1.5;
-  color: rgba(255, 255, 255, 0.88);
+  color: rgba(255, 255, 255, 0.84);
 }
 
 .actions {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin: 28px 0 0;
+  margin: 32px 0 0;
 }
 
 .button {
   display: inline-block;
-  padding: 11px 20px;
-  border-radius: 10px;
+  padding: 13px 24px;
+  border-radius: 12px;
+  font-size: 18px;
   font-weight: 600;
   text-decoration: none;
   background: var(--moon);
@@ -290,132 +310,196 @@ pre {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
 }
 
-.button:hover {
-  filter: brightness(1.06);
-}
-
 .meta {
   margin: 16px 0 0;
+  max-width: 34em;
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.72);
+  color: rgba(255, 255, 255, 0.7);
 }
 
-.menubar {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin: 36px 0 0;
-}
-
-.menubar-strip {
-  flex: none;
-  display: inline-flex;
-  gap: 14px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.12);
-}
-
-/* The menu bar icons are black template images; the bar shows them white. */
-.menubar-strip img {
+.hero-art {
   display: block;
-  filter: invert(1);
+  width: calc(100% + var(--bleed));
+  height: auto;
+  margin: 0 calc(-1 * var(--bleed)) -1px 0;
 }
 
-.menubar figcaption {
-  font-size: 14px;
-  line-height: 1.4;
-  color: rgba(255, 255, 255, 0.72);
+.stars circle {
+  fill: #fff;
+  opacity: 0.7;
 }
 
-.annotated {
-  margin: 0;
+.moon-fill {
+  fill: var(--moon);
 }
 
-.popover-frame {
+.screen-glow {
+  opacity: 0;
+}
+
+.seam-glow {
+  opacity: 0.75;
+}
+
+/* Animated parts turn and scale about their own boxes. */
+.lid-screen,
+.lid-back,
+.typed rect,
+.bubble,
+.dot,
+.drop,
+.pop,
+.ring,
+.press,
+.sheet,
+.cursor,
+.check,
+.level,
+.mercury,
+.sunrise,
+.moonset,
+.shackle,
+.notif,
+.buzz,
+.sand-top,
+.sand-bottom,
+.resume,
+.slide,
+.zz,
+.steam {
+  transform-box: fill-box;
+}
+
+.lid-screen {
+  transform-origin: 50% 100%;
+  transform: scaleY(0);
+}
+
+.lid-back {
+  transform-origin: 50% 0;
+}
+
+.typed rect {
+  transform-origin: 0 50%;
+}
+
+.bubble {
+  transform-origin: 30% 100%;
+}
+
+.dot,
+.pop,
+.ring,
+.press,
+.resume,
+.buzz {
+  transform-origin: 50% 50%;
+}
+
+/* Tonight: three steps on one moonlit path. */
+
+.steps-frame {
+  --win: 200px;
+  --gap: 40px;
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 44px var(--gutter) 8px;
+}
+
+.steps-frame h2 {
+  margin: 0 0 32px;
+  font-size: clamp(28px, 3.4vw, 38px);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.steps-row {
   position: relative;
-  width: 380px;
-  max-width: 100%;
 }
 
-.popover-frame img {
+.steps {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.window {
+  position: relative;
+  width: var(--win);
+  height: var(--win);
+  margin-bottom: 24px;
+}
+
+.window svg,
+.window-art,
+.watch svg,
+.install-art {
   display: block;
-  filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.5));
+  filter: var(--lift);
 }
 
-.marker,
-.num {
-  display: inline-grid;
+.window svg {
+  width: 100%;
+  height: 100%;
+}
+
+.step-num {
+  position: absolute;
+  left: -4px;
+  top: -4px;
+  z-index: 2;
+  display: grid;
   place-items: center;
-  flex: none;
-  width: 28px;
-  height: 28px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   background: var(--moon);
   color: var(--night-a);
-  font-size: 14px;
+  font-size: 19px;
   font-weight: 700;
-  line-height: 1;
-  text-decoration: none;
-  font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 5px var(--ground);
 }
 
-.marker {
-  position: absolute;
-  right: -14px;
-  top: var(--y);
-  transform: translateY(-50%);
-  box-shadow: 0 0 0 5px rgba(247, 214, 128, 0.22), 0 4px 12px rgba(0, 0, 0, 0.35);
+.step h3 {
+  margin: 0 0 8px;
+  font-size: 22px;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
 }
 
-a.num:hover {
-  box-shadow: 0 0 0 4px rgba(247, 214, 128, 0.4);
-}
-
-.marker:hover {
-  box-shadow: 0 0 0 7px rgba(247, 214, 128, 0.35), 0 4px 12px rgba(0, 0, 0, 0.35);
-}
-
-.annotated figcaption {
-  margin-top: 18px;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.62);
-}
-
-.legend {
-  list-style: none;
+.step p {
   margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 18px;
 }
 
-.legend a {
-  display: grid;
-  grid-template-columns: 28px 1fr;
-  column-gap: 12px;
-  color: #fff;
-  text-decoration: none;
+.step .aside {
+  margin-top: 10px;
+  font-size: 15px;
 }
 
-.legend strong {
-  font-size: 16px;
-  line-height: 28px;
+/* Dotted arcs from one window to the next, like the moon's path. */
+.path {
+  position: absolute;
+  z-index: 0;
+  top: calc(var(--win) / 2 - 36px);
+  left: calc(var(--win) + 10px);
+  width: calc((100% - 2 * var(--gap)) / 3 + var(--gap) - var(--win) - 20px);
+  height: 96px;
+  border: 3px dotted transparent;
+  border-top-color: var(--moon);
+  border-radius: 50%;
+  pointer-events: none;
 }
 
-.legend span:not(.num) {
-  grid-column: 2;
-  font-size: 14px;
-  line-height: 1.45;
-  color: rgba(255, 255, 255, 0.72);
+.path-b {
+  left: calc((100% - 2 * var(--gap)) / 3 + var(--gap) + var(--win) + 10px);
 }
 
-.legend a:hover strong {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-/* Chapters: an opener band carrying the time of night, then the column. */
+/* Chapters. */
 
 .opener {
   display: flex;
@@ -442,19 +526,22 @@ a.num:hover {
   white-space: nowrap;
 }
 
-[data-phase="dusk"] > .opener {
-  background: linear-gradient(180deg, var(--dusk-b), var(--dusk-a));
-}
-
 [data-phase="night"] > .opener {
-  background: linear-gradient(180deg, var(--night-a), #1b1e41);
+  background:
+    radial-gradient(1.5px 1.5px at 12% 30%, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1px 1px at 31% 72%, rgba(255, 255, 255, 0.55), transparent),
+    radial-gradient(1.5px 1.5px at 68% 22%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 88% 64%, rgba(255, 255, 255, 0.5), transparent),
+    linear-gradient(180deg, var(--night-a), #1b1e41);
 }
 
 [data-phase="rose"] > .opener {
-  background: linear-gradient(180deg, var(--night-b) 0%, #4f3d70 60%, var(--rose) 100%);
+  background:
+    radial-gradient(1.5px 1.5px at 18% 26%, rgba(255, 255, 255, 0.55), transparent),
+    radial-gradient(1px 1px at 76% 34%, rgba(255, 255, 255, 0.45), transparent),
+    linear-gradient(180deg, var(--night-b) 0%, #4f3d70 60%, var(--rose) 100%);
 }
 
-/* Dawn: the night has turned amber, so the type turns to night ink. */
 [data-phase="dawn"] > .opener {
   background: linear-gradient(180deg, #c48468, #d49464);
   color: var(--night-a);
@@ -470,225 +557,160 @@ a.num:hover {
 }
 
 [data-phase="day"] > .opener .clock {
-  color: #a87a14;
-}
-
-@media (prefers-color-scheme: dark) {
-  [data-phase="day"] > .opener .clock {
-    color: var(--moon);
-  }
+  color: var(--moon-ink);
 }
 
 .column {
   max-width: calc(var(--measure) + 2 * var(--gutter));
   margin: 0 auto;
-  padding: 36px var(--gutter) 72px;
+  padding: 40px var(--gutter) 72px;
+}
+
+#tonight .column {
+  padding-top: 64px;
+}
+
+.column h2 {
+  margin: 0 0 14px;
+  font-size: 28px;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
 }
 
 .column h2.plain {
-  margin: 72px 0 0;
-  padding-top: 32px;
-  border-top: 1px solid var(--line);
-  font-size: 30px;
-  letter-spacing: -0.02em;
+  margin-top: 64px;
 }
 
 .column h3 {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 2.2em 0 0.4em;
-  font-size: 22px;
+  margin: 40px 0 8px;
+  font-size: 21px;
   line-height: 1.3;
   letter-spacing: -0.01em;
 }
 
-.column h3 .num {
-  width: 26px;
-  height: 26px;
-  font-size: 13px;
-}
-
 .column p {
-  margin: 0.8em 0;
+  margin: 0 0 16px;
 }
 
-.column ul {
-  padding-left: 1.2em;
+.lead {
+  font-size: 19px;
 }
 
-.column li {
-  margin: 0.35em 0;
-}
-
-pre {
-  margin: 1.2em 0;
-  padding: 16px 18px;
-  border-radius: 10px;
-  background: var(--code-ground);
-  color: var(--code-ink);
-  font-size: 14px;
-  line-height: 1.55;
-  overflow-x: auto;
-}
-
-.table-wrap {
-  overflow-x: auto;
-  margin: 1.2em 0;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
+.note {
   font-size: 15px;
-  line-height: 1.45;
-}
-
-th,
-td {
-  padding: 10px 12px 10px 0;
-  text-align: left;
-  vertical-align: top;
-  border-bottom: 1px solid var(--line);
-}
-
-th {
-  font-weight: 600;
-}
-
-/* File names size to their content and never break inside a name; the
-   description column takes the wrapping. */
-.files td:first-child,
-.files th:first-child {
-  width: 1%;
-  white-space: nowrap;
-}
-
-/* Screenshots. Figures may run wider than the text column. */
-
-.trio,
-.pair,
-.side {
-  position: relative;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(var(--wide, 900px), 100vw - 2 * var(--gutter));
-  margin: 32px 0;
-}
-
-.trio,
-.pair {
-  display: grid;
-  gap: 28px;
-}
-
-.trio {
-  --wide: 960px;
-  grid-template-columns: repeat(3, 1fr);
-}
-
-.pair {
-  --wide: 800px;
-  grid-template-columns: repeat(2, 1fr);
-}
-
-.trio img,
-.pair img,
-.side img {
-  display: block;
-  margin: 0 auto;
-  filter: var(--shadow);
-}
-
-.trio figcaption,
-.pair figcaption {
-  margin-top: 12px;
-  font-size: 14px;
-  text-align: center;
   color: var(--muted);
 }
 
-.side {
-  --wide: 900px;
+/* Text beside a round window of night. */
+.with-art {
   display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr) 180px;
   gap: 40px;
+  align-items: start;
+  margin: 0 0 8px;
 }
 
-.side h3:first-child {
-  margin-top: 0;
+.column > .with-art:not(:first-child) {
+  margin-top: 56px;
 }
 
-.side img {
-  width: 300px;
+.window-art {
+  width: 180px;
+  height: 180px;
 }
 
-.side.reverse {
-  grid-template-columns: minmax(0, 1fr) 300px;
+.plain-list {
+  margin: 0 0 16px;
+  padding-left: 22px;
 }
 
-.side.reverse img {
-  order: 2;
+.plain-list li {
+  margin: 6px 0;
 }
 
-.side p:first-child {
-  margin-top: 0;
+.plain-list li::marker {
+  color: var(--moon-ink);
 }
 
-/* How the lid lock works, as a sequence. */
-
-.flow {
-  margin: 28px 0;
-}
-
-.flow ol {
-  list-style: none;
-  margin: 0;
+/* Numbered how-tos: a night disc with a gold number. */
+.numbered {
+  margin: 12px 0 20px;
   padding: 0;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 22px;
+  list-style: none;
+  counter-reset: step;
 }
 
-.flow li {
+.numbered li {
   position: relative;
-  display: grid;
-  gap: 4px;
-  padding: 14px;
-  border-radius: 10px;
-  background: var(--card);
-  box-shadow: 0 0 0 1px var(--line);
-  font-size: 14px;
-  line-height: 1.35;
+  margin: 12px 0;
+  padding-left: 42px;
+  counter-increment: step;
 }
 
-.flow li strong {
-  font-size: 15px;
-  overflow-wrap: anywhere;
-}
-
-.flow li span {
-  color: var(--muted);
-}
-
-/* A drawn arrow between steps. */
-.flow li + li::before {
-  content: "";
+.numbered li::before {
+  content: counter(step);
   position: absolute;
-  left: -17px;
-  top: 50%;
-  width: 10px;
-  height: 10px;
-  border-top: 2px solid var(--muted);
-  border-right: 2px solid var(--muted);
-  transform: translateY(-50%) rotate(45deg);
+  left: 0;
+  top: 0;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--count);
+  color: var(--moon);
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
-.flow figcaption {
-  margin-top: 12px;
-  font-size: 14px;
+/* What Overnight watches for while you sleep. */
+.watch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px 36px;
+  margin: 28px 0 32px;
+  padding: 0;
+  list-style: none;
+}
+
+.watch li {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.watch svg {
+  width: 76px;
+  height: 76px;
+}
+
+.watch h3 {
+  margin: 4px 0 4px;
+  font-size: 18px;
+}
+
+.watch p {
+  margin: 0;
+  font-size: 16px;
   color: var(--muted);
+}
+
+.install-art {
+  width: 100%;
+  max-width: 560px;
+  height: auto;
+  margin: 0 0 28px;
+}
+
+.faq h3 {
+  margin: 28px 0 4px;
+  font-size: 18px;
+}
+
+.faq p {
+  margin: 0;
 }
 
 .end {
@@ -699,73 +721,604 @@ th {
   border-top: 1px solid var(--line);
 }
 
-/* Narrower screens. */
+.end p {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
 
-@media (max-width: 1180px) {
-  .intro {
-    grid-template-columns: 380px minmax(0, 1fr);
-    row-gap: 40px;
+.end .moon {
+  width: 16px;
+  height: 16px;
+  fill: var(--moon-ink);
+}
+
+/* Resting states that differ from how the drawing starts. */
+
+.ring {
+  opacity: 0;
+}
+
+.lamp-light {
+  opacity: 0;
+}
+
+.stream {
+  opacity: 0;
+}
+
+.moonset {
+  opacity: 0.5;
+  transform: translate(-6px, 12px);
+}
+
+.slide {
+  transform: translate(166px, -22px);
+}
+
+/* Motion. Each drawing plays once, the first time it scrolls into view
+   (site.js adds .play); the hero plays on load. A few small loops keep
+   going: the typing dots, the glow under the closed lid, the stars and the
+   steam over the morning cup. */
+
+@media (prefers-reduced-motion: no-preference) {
+  .js .art *,
+  .js .art {
+    animation-play-state: paused;
   }
 
-  .intro-text {
-    grid-column: 1 / -1;
+  .js .play *,
+  .js .play {
+    animation-play-state: running;
+  }
+
+  .js .stars circle {
+    animation: twinkle 3.6s ease-in-out var(--d) infinite alternate both;
+  }
+
+  .js .moon-rise {
+    animation: rise 2.6s var(--out) 0.1s both;
+  }
+
+  .js .typed rect {
+    animation: type 0.35s var(--out) var(--d) both;
+  }
+
+  .js .caret {
+    animation: blink 0.5s steps(1) 0.9s 2 both;
+  }
+
+  .js .hero-art .screen-glow {
+    animation: fade-out 0.6s ease-in 1.4s both;
+  }
+
+  .js .hero-art .lid-screen {
+    animation: lid-fold 0.55s cubic-bezier(0.55, 0, 0.8, 0.2) 1.4s both;
+  }
+
+  .js .hero-art .lid-back {
+    animation: lid-land 0.5s var(--out) 1.95s both;
+  }
+
+  .js .hero-art .seam-glow {
+    animation: breathe 3.2s ease-in-out 2.4s infinite alternate both;
+  }
+
+  .js .hero-art .bubble {
+    animation: pop 0.6s var(--out) 2.5s both;
+  }
+
+  .js .hero-art .dot {
+    animation: bounce 1.3s ease-in-out 3s infinite both;
+  }
+
+  .js .dot:nth-of-type(2) {
+    animation-delay: 3.15s;
+  }
+
+  .js .dot:nth-of-type(3) {
+    animation-delay: 3.3s;
+  }
+
+  /* Steps: on a wide screen the three play one after another. */
+  .step {
+    --o: 0s;
+  }
+
+  .js .step .drop {
+    animation: drop 0.8s var(--out) calc(var(--o) + 0.2s) both;
+  }
+
+  .js .step .pop {
+    animation: pop 0.5s var(--out) calc(var(--o) + 0.95s) both;
+  }
+
+  .js .step .ring {
+    animation: ring 0.9s ease-out calc(var(--o) + 1.1s) both;
+  }
+
+  .js .step .cursor {
+    animation: point 0.8s var(--out) calc(var(--o) + 0.3s) both;
+  }
+
+  .js .step .press {
+    animation: press 0.3s ease-in-out calc(var(--o) + 1.05s) both;
+  }
+
+  .js .step .sheet {
+    animation: rise-in 0.5s var(--out) calc(var(--o) + 1.3s) both;
+  }
+
+  .js .step .key {
+    animation: appear 0.1s linear calc(var(--o) + var(--d)) both;
+  }
+
+  .js .step .lamp-light {
+    animation: lamp-off 1.1s ease-in calc(var(--o) + 0.2s) both;
+  }
+
+  .js .step .bulb {
+    animation: bulb-off 1.1s ease-in calc(var(--o) + 0.2s) both;
+  }
+
+  .js .step .lid-screen {
+    animation: lid-fold 0.55s cubic-bezier(0.55, 0, 0.8, 0.2) calc(var(--o) + 1s) both;
+  }
+
+  .js .step .lid-back {
+    animation: lid-land 0.5s var(--out) calc(var(--o) + 1.55s) both;
+  }
+
+  .js .step .bubble {
+    animation: pop 0.6s var(--out) calc(var(--o) + 2s) both;
+  }
+
+  .js .step .dot {
+    animation: bounce 1.3s ease-in-out calc(var(--o) + 2.5s) infinite both;
+  }
+
+  .js .step .dot:nth-of-type(2) {
+    animation-delay: calc(var(--o) + 2.65s);
+  }
+
+  .js .step .dot:nth-of-type(3) {
+    animation-delay: calc(var(--o) + 2.8s);
+  }
+
+  .js .path {
+    animation: draw 0.9s ease-in-out 0.9s both;
+  }
+
+  .js .path-b {
+    animation-delay: 1.6s;
+  }
+
+  /* While you sleep. */
+  .watch li:nth-child(2) {
+    --o: 0.25s;
+  }
+
+  .watch li:nth-child(3) {
+    --o: 0.5s;
+  }
+
+  .watch li:nth-child(4) {
+    --o: 0.75s;
+  }
+
+  .js .watch .check {
+    stroke-dasharray: 44;
+    animation: stroke 0.5s var(--out) 0.2s both;
+  }
+
+  .js .watch .zz {
+    animation: rise-in 0.6s var(--out) 0.8s both;
+  }
+
+  .js .watch .level {
+    transform-origin: 0 50%;
+    animation: drain 1.8s ease-in-out calc(var(--o) + 0.2s) both;
+  }
+
+  .js .watch .mercury {
+    transform-origin: 50% 100%;
+    animation: heat 1.6s ease-out calc(var(--o) + 0.2s) both;
+  }
+
+  .js .watch .sunrise {
+    animation: sun 1.8s var(--out) calc(var(--o) + 0.2s) both;
+  }
+
+  .js .shackle {
+    animation: unlock 2.2s ease-in-out 0.3s both;
+  }
+
+  .js .notif {
+    animation: slide-down 0.6s var(--out) 0.4s both;
+  }
+
+  .js .buzz {
+    animation: buzz 0.5s ease-in-out 0.95s both;
+  }
+
+  .js .sand-top {
+    transform-origin: 50% 100%;
+    animation: empty 2.4s linear 0.3s both;
+  }
+
+  .js .sand-bottom {
+    transform-origin: 50% 100%;
+    animation: fill 2.4s linear 0.3s both;
+  }
+
+  .js .stream {
+    animation: pour 2.4s linear 0.3s both;
+  }
+
+  .js .resume {
+    animation: pop 0.5s var(--out) 2.8s both;
+  }
+
+  .js .with-art .sunrise {
+    animation: sun 2.2s var(--out) 0.2s both;
+  }
+
+  .js .moonset {
+    animation: set 2.2s ease-in-out 0.2s both;
+  }
+
+  .js .with-art .zz {
+    animation: rise-in 0.6s var(--out) 1.4s both;
+  }
+
+  .js .with-art .zz-2 {
+    animation-delay: 1.7s;
+  }
+
+  .js .steam {
+    animation: steam 2.6s ease-out 0.5s infinite both;
+  }
+
+  .js .slide {
+    animation: install 2.2s ease-in-out 0.3s both;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) and (min-width: 861px) {
+  .step:nth-child(2) {
+    --o: 0.6s;
+  }
+
+  .step:nth-child(3) {
+    --o: 1.2s;
+  }
+}
+
+@keyframes twinkle {
+  from {
+    opacity: 0.2;
+  }
+  to {
+    opacity: 0.9;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(80px);
+  }
+}
+
+@keyframes type {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes lid-fold {
+  from {
+    transform: scaleY(1);
+  }
+  to {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes lid-land {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes breathe {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 0.9;
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+
+@keyframes bounce {
+  0%,
+  60%,
+  100% {
+    opacity: 0.55;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes drop {
+  from {
+    transform: translateY(-84px);
+  }
+}
+
+@keyframes ring {
+  from {
+    opacity: 0.9;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+@keyframes point {
+  from {
+    opacity: 0;
+    transform: translate(46px, 64px);
+  }
+}
+
+@keyframes press {
+  50% {
+    transform: scale(0.94);
+    filter: brightness(0.85);
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes lamp-off {
+  0%,
+  55% {
+    opacity: 0.3;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes bulb-off {
+  0%,
+  55% {
+    fill: #f7d680;
+  }
+}
+
+@keyframes draw {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes stroke {
+  from {
+    stroke-dashoffset: 44;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes drain {
+  from {
+    transform: scaleX(6);
+    fill: #34c759;
+  }
+  60% {
+    fill: #ff9f0a;
+  }
+}
+
+@keyframes heat {
+  from {
+    transform: scaleY(0.25);
+  }
+}
+
+@keyframes sun {
+  from {
+    transform: translateY(36px);
+  }
+}
+
+@keyframes unlock {
+  0% {
+    transform: translateY(0);
+  }
+  25%,
+  65% {
+    transform: translateY(-16px);
+  }
+  85% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-48px);
+  }
+}
+
+@keyframes buzz {
+  20% {
+    transform: rotate(-3deg);
+  }
+  40% {
+    transform: rotate(3deg);
+  }
+  60% {
+    transform: rotate(-2deg);
+  }
+  80% {
+    transform: rotate(2deg);
+  }
+}
+
+@keyframes empty {
+  from {
+    transform: scaleY(3.6);
+  }
+}
+
+@keyframes fill {
+  from {
+    transform: scaleY(0.08);
+  }
+}
+
+@keyframes pour {
+  0%,
+  92% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes set {
+  from {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes steam {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  30% {
+    opacity: 0.75;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes install {
+  0% {
+    opacity: 0;
+    transform: translate(-150px, 0) scale(0.5);
+  }
+  35%,
+  55% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+/* Narrower screens. */
+
+@media (max-width: 1100px) {
+  .phase {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .hero {
+    --bleed: var(--gutter);
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hero-text {
+    padding-bottom: 8px;
+  }
+
+  .hero-art {
+    width: calc(100% + 2 * var(--bleed));
+    max-width: none;
+    margin: 0 calc(-1 * var(--bleed)) -1px;
   }
 }
 
 @media (max-width: 860px) {
-  .bar nav a:not(:last-child) {
+  .bar nav {
     display: none;
   }
 
-  .trio {
-    grid-template-columns: 1fr;
+  .phase {
+    display: block;
+    margin-left: auto;
   }
 
-  .pair {
-    grid-template-columns: 1fr;
+  .steps-frame {
+    --win: 168px;
   }
 
-  .trio img,
-  .pair img {
-    width: 280px;
+  .steps {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 48px;
   }
 
-  .side,
-  .side.reverse {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-
-  .side img,
-  .side.reverse img {
-    order: 0;
-    width: 280px;
-  }
-
-  .flow ol {
-    grid-template-columns: 1fr;
-  }
-
-  .flow li + li::before {
-    left: 24px;
-    top: -15px;
-    transform: rotate(135deg);
+  .path {
+    display: none;
   }
 }
 
 @media (max-width: 700px) {
-  #phase-name {
-    display: none;
-  }
-
-  .intro {
-    grid-template-columns: 1fr;
-    padding-top: 40px;
-    min-height: 0;
-  }
-
-  .popover-frame {
-    width: min(340px, calc(100vw - 2 * var(--gutter) - 16px));
+  :root {
+    --gutter: 20px;
   }
 
   .lede {
@@ -776,10 +1329,34 @@ th {
     padding-top: 32px;
     padding-bottom: 28px;
   }
+
+  .with-art {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+
+  .with-art > svg {
+    order: -1;
+    width: 140px;
+    height: 140px;
+  }
+
+  .watch {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .bar {
-    transition: none;
+@media (max-width: 480px) {
+  .phase {
+    display: none;
+  }
+
+  .bar-download {
+    margin-left: auto;
+  }
+
+  .button {
+    flex: 1 1 auto;
+    text-align: center;
   }
 }

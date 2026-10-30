@@ -36,6 +36,29 @@ addEventListener("scroll", update, { passive: true });
 addEventListener("resize", update);
 update();
 
+// Each drawing plays once, the first time a good part of it is on screen. The
+// hero's plays straight away. Without this script the drawings rest on their
+// last frame, and the stylesheet skips all motion under reduced motion.
+const drawings = [...document.querySelectorAll(".art")];
+const hero = document.querySelector(".hero-art");
+hero.classList.add("play");
+
+if ("IntersectionObserver" in window) {
+  const watcher = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        entry.target.classList.add("play");
+        watcher.unobserve(entry.target);
+      }
+    },
+    { threshold: 0.3 },
+  );
+  for (const el of drawings) if (el !== hero) watcher.observe(el);
+} else {
+  for (const el of drawings) el.classList.add("play");
+}
+
 // The download button always fetches the newest release; say which one it is.
 // Without the network, the text stays "The latest version".
 fetch("https://api.github.com/repos/dienp/overnight/releases/latest")

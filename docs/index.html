@@ -3,159 +3,341 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Overnight: keep your Mac awake while Claude works</title>
+    <title>Overnight: let Claude keep working while you sleep</title>
     <meta
       name="description"
-      content="A macOS menu bar app that keeps a MacBook awake with the lid closed while Claude Code works, then lets it sleep."
+      content="Overnight keeps your MacBook awake with the lid closed while Claude Code works, then lets it sleep when the work is done."
     />
     <meta name="color-scheme" content="light dark" />
-    <link rel="icon" type="image/png" href="assets/tray-on.png" />
+    <link rel="icon" type="image/svg+xml" href="assets/moon.svg" />
     <link rel="stylesheet" href="site.css" />
+    <script>document.documentElement.classList.add("js");</script>
     <script src="site.js" defer></script>
   </head>
   <body>
-    <a class="skip" href="#evening">Skip to the documentation</a>
+    <a class="skip" href="#tonight">Skip to the three steps</a>
+
+    <!-- Shapes the drawings share. -->
+    <svg width="0" height="0" class="defs" aria-hidden="true" focusable="false">
+      <defs>
+        <symbol id="crescent" viewBox="0 0 36 36">
+          <path d="M17 6a13 13 0 1 0 12.9 14.6A11 11 0 0 1 17.4 6Z" />
+          <path d="M28.5 2.5l1.1 3.9 3.9 1.1-3.9 1.1-1.1 3.9-1.1-3.9-3.9-1.1 3.9-1.1z" />
+        </symbol>
+        <linearGradient id="sky-dusk" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#3f4459" /><stop offset="1" stop-color="#2a2d3b" />
+        </linearGradient>
+        <linearGradient id="sky-night" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#1b1e41" /><stop offset="1" stop-color="#3a316f" />
+        </linearGradient>
+        <linearGradient id="sky-deep" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#14163a" /><stop offset="1" stop-color="#23264f" />
+        </linearGradient>
+        <linearGradient id="sky-rose" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#3a316f" /><stop offset=".6" stop-color="#4f3d70" /><stop offset="1" stop-color="#6b4a7a" />
+        </linearGradient>
+        <linearGradient id="sky-dawn" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#3a316f" /><stop offset=".55" stop-color="#9a6a78" /><stop offset="1" stop-color="#e3a070" />
+        </linearGradient>
+        <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#3a316f" /><stop offset="1" stop-color="#23264f" />
+        </linearGradient>
+        <linearGradient id="lid" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#eef0f8" /><stop offset="1" stop-color="#c9cbe0" />
+        </linearGradient>
+        <radialGradient id="glow-moon">
+          <stop offset="0" stop-color="#f7d680" stop-opacity=".35" /><stop offset="1" stop-color="#f7d680" stop-opacity="0" />
+        </radialGradient>
+        <radialGradient id="glow-screen">
+          <stop offset="0" stop-color="#7d7aff" stop-opacity=".4" /><stop offset="1" stop-color="#7d7aff" stop-opacity="0" />
+        </radialGradient>
+        <filter id="soft" x="-20%" y="-200%" width="140%" height="500%"><feGaussianBlur stdDeviation="5" /></filter>
+        <clipPath id="round"><circle cx="120" cy="120" r="120" /></clipPath>
+        <clipPath id="round-small"><circle cx="60" cy="60" r="60" /></clipPath>
+      </defs>
+    </svg>
 
     <header class="bar" id="bar">
       <a class="brand" href="#top" aria-label="Overnight, back to the top">
-        <svg class="moon" viewBox="0 0 36 36" aria-hidden="true">
-          <path class="moon-body" d="M17 6a13 13 0 1 0 12.9 14.6A11 11 0 0 1 17.4 6Z" />
-          <path class="moon-star" d="M28.5 2.5l1.1 3.9 3.9 1.1-3.9 1.1-1.1 3.9-1.1-3.9-3.9-1.1 3.9-1.1z" />
-        </svg>
+        <svg class="moon" viewBox="0 0 36 36" aria-hidden="true"><use href="#crescent" /></svg>
         Overnight
       </a>
-      <p class="phase" id="phase"><span id="phase-time">8 PM</span> <span id="phase-name">Before you close the lid</span></p>
+      <p class="phase" id="phase"><span id="phase-time">8 PM</span> <span id="phase-name">Tonight</span></p>
       <nav aria-label="Sections">
-        <a href="#evening">Evening</a>
-        <a href="#night">Night</a>
-        <a href="#reset">Reset</a>
+        <a href="#tonight">Tonight</a>
+        <a href="#night">While you sleep</a>
+        <a href="#reset">Usage limits</a>
         <a href="#morning">Morning</a>
         <a href="#install">Install</a>
-        <a href="https://github.com/dienp/overnight">GitHub</a>
       </nav>
+      <a class="bar-download" href="https://github.com/dienp/overnight/releases/latest/download/Overnight-macos.zip">Download</a>
     </header>
 
     <main>
-      <section class="intro" id="top" data-time="8 PM" data-name="Before you close the lid" data-phase="dusk">
-        <div class="intro-text">
-          <h1>
-            <svg class="moon" viewBox="0 0 36 36" aria-hidden="true">
-              <path class="moon-body" d="M17 6a13 13 0 1 0 12.9 14.6A11 11 0 0 1 17.4 6Z" />
-              <path class="moon-star" d="M28.5 2.5l1.1 3.9 3.9 1.1-3.9 1.1-1.1 3.9-1.1-3.9-3.9-1.1 3.9-1.1z" />
-            </svg>
-            Overnight
-          </h1>
+      <section class="hero" id="top" data-time="8 PM" data-name="Tonight" data-phase="dusk">
+        <div class="hero-text">
+          <h1>Let Claude keep working while you sleep</h1>
           <p class="lede">
-            Overnight keeps your MacBook awake with the lid closed while Claude Code has work to do, then lets
-            it sleep once Claude goes idle, the battery runs low, the Mac gets hot or morning comes.
+            Close your MacBook at night and Claude carries on with its work. When it's done, your Mac goes to
+            sleep by itself.
           </p>
           <p class="actions">
             <a class="button" href="https://github.com/dienp/overnight/releases/latest/download/Overnight-macos.zip">Download for Mac</a>
-            <a class="button ghost" href="https://github.com/dienp/overnight">View on GitHub</a>
+            <a class="button ghost" href="#tonight">How to start</a>
           </p>
-          <p class="meta"><span data-version>The latest version</span>, free, for macOS 12 or later on Apple silicon and Intel Macs.</p>
-          <figure class="menubar">
-            <span class="menubar-strip">
-              <img src="assets/tray-off.png" width="18" height="18" alt="Hollow moon" />
-              <img src="assets/tray-standby.png" width="18" height="18" alt="Half-lit moon" />
-              <img src="assets/tray-on.png" width="18" height="18" alt="Full moon with a star" />
-            </span>
-            <figcaption>In the menu bar: normal sleep, armed but letting the Mac sleep, and keeping it awake.</figcaption>
-          </figure>
+          <p class="meta">
+            <span data-version>The latest version</span>, free, for macOS 12 or later. Works with Claude Code in
+            the Claude app or in Terminal.
+          </p>
         </div>
 
-        <figure class="annotated">
-          <div class="popover-frame">
-            <img
-              src="assets/popover-armed.png"
-              width="380"
-              height="620"
-              alt="The Overnight popover. The top reads Awake while Claude works, the lid can close. Below are the While Claude works and All night modes, the Wait for usage-limit resets switch, a stop time of 8:00, and a list of Claude sessions marked working."
-            />
-            <a class="marker" href="#status" style="--y: 6%" aria-label="1: What the Mac will do">1</a>
-            <a class="marker" href="#modes" style="--y: 36%" aria-label="2: Two ways to stay awake">2</a>
-            <a class="marker" href="#limits" style="--y: 51%" aria-label="3: Usage-limit resets">3</a>
-            <a class="marker" href="#stop" style="--y: 59%" aria-label="4: A time to stop">4</a>
-            <a class="marker" href="#working" style="--y: 82%" aria-label="5: Your Claude sessions">5</a>
-          </div>
-          <figcaption>The popover while Overnight keeps the Mac awake. Sample sessions.</figcaption>
-        </figure>
+        <svg class="art hero-art" viewBox="96 70 600 450" role="img"
+          aria-label="A MacBook on a desk at night. Its lid closes as the moon rises, and a speech bubble above it shows Claude still typing.">
+          <defs>
+            <linearGradient id="desk-top" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#30336c" /><stop offset="1" stop-color="#25285a" />
+            </linearGradient>
+            <linearGradient id="desk-fade" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#fff" stop-opacity="0" /><stop offset=".16" stop-color="#fff" />
+              <stop offset=".9" stop-color="#fff" /><stop offset="1" stop-color="#fff" stop-opacity="0" />
+            </linearGradient>
+            <mask id="desk-mask" maskUnits="userSpaceOnUse" x="96" y="420" width="600" height="110">
+              <rect x="96" y="420" width="600" height="110" fill="url(#desk-fade)" />
+            </mask>
+          </defs>
+          <g class="stars">
+            <circle cx="150" cy="140" r="1.3" style="--d: 0.5s" /><circle cx="250" cy="96" r="2" style="--d: 0.3s" />
+            <circle cx="330" cy="110" r="1.2" style="--d: 0.9s" /><circle cx="420" cy="84" r="1.6" style="--d: 0.2s" />
+            <circle cx="460" cy="170" r="1.2" style="--d: 0.7s" /><circle cx="660" cy="96" r="2" style="--d: 0.4s" />
+            <circle cx="680" cy="250" r="1.4" style="--d: 1.1s" /><circle cx="130" cy="250" r="1.3" style="--d: 0.8s" />
+            <circle cx="236" cy="200" r="1.1" style="--d: 1.4s" /><circle cx="380" cy="190" r="1.5" style="--d: 0.6s" />
+            <circle cx="520" cy="110" r="1.2" style="--d: 1.2s" /><circle cx="300" cy="260" r="1.2" style="--d: 1s" />
+            <circle cx="180" cy="330" r="1.5" style="--d: 0.4s" /><circle cx="640" cy="330" r="1.2" style="--d: 0.9s" />
+          </g>
+          <g class="moon-rise">
+            <circle cx="566" cy="150" r="78" fill="url(#glow-moon)" />
+            <use href="#crescent" x="494" y="76" width="150" height="150" class="moon-fill" />
+          </g>
 
-        <ol class="legend" aria-label="Parts of the popover">
-          <li>
-            <a href="#status"><span class="num" aria-hidden="true">1</span><strong>What the Mac will do</strong>
-              <span>Awake, about to sleep, or how last night went.</span></a>
-          </li>
-          <li>
-            <a href="#modes"><span class="num" aria-hidden="true">2</span><strong>Two ways to stay awake</strong>
-              <span>Only while Claude works, or all night.</span></a>
-          </li>
-          <li>
-            <a href="#limits"><span class="num" aria-hidden="true">3</span><strong>Usage-limit resets</strong>
-              <span>Stays up so Claude can continue after one.</span></a>
-          </li>
-          <li>
-            <a href="#stop"><span class="num" aria-hidden="true">4</span><strong>A time to stop</strong>
-              <span>8:00 AM unless you change it.</span></a>
-          </li>
-          <li>
-            <a href="#working"><span class="num" aria-hidden="true">5</span><strong>Your Claude sessions</strong>
-              <span>Working, idle, paused or stopped.</span></a>
-          </li>
-        </ol>
+          <g mask="url(#desk-mask)">
+            <rect x="96" y="430" width="600" height="72" fill="url(#desk-top)" />
+            <rect x="96" y="430" width="600" height="2" fill="#ffffff" opacity=".1" />
+            <rect x="96" y="502" width="600" height="20" fill="#17193a" />
+          </g>
+          <ellipse cx="340" cy="471" rx="252" ry="12" fill="#0b0d29" opacity=".5" />
+          <ellipse class="seam-glow" cx="340" cy="474" rx="220" ry="13" fill="#7d7aff" filter="url(#soft)" />
+
+          <g class="lamp">
+            <ellipse cx="640" cy="468" rx="30" ry="6" fill="#9ea1c4" />
+            <path d="M640 464 L656 392 L611 334" stroke="#9ea1c4" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+            <path d="M600 328 h22 l14 32 h-50 z" fill="#c9cbe0" />
+            <ellipse cx="611" cy="361" rx="9" ry="4" fill="#7a7da6" />
+          </g>
+
+          <!-- The base of the laptop. -->
+          <path d="M180 382 L500 382 L552 452 L128 452 Z" fill="#d9dbec" />
+          <path d="M198 390 L482 390 L503 422 L177 422 Z" fill="#b9bcd6" />
+          <path d="M190 401 L490 401 M185 411 L495 411" stroke="#a7aacb" stroke-width="2" />
+          <path d="M300 429 L380 429 L386 446 L294 446 Z" fill="#c9cbe0" />
+          <path d="M128 452 L552 452 L546 467 L134 467 Z" fill="#8a8db4" />
+          <rect x="314" y="459" width="52" height="5" rx="2.5" fill="#6f729c" />
+
+          <ellipse class="screen-glow" cx="340" cy="290" rx="250" ry="170" fill="url(#glow-screen)" />
+          <g class="lid-screen">
+            <path d="M188 150 L492 150 L500 382 L180 382 Z" fill="#14163a" />
+            <path d="M197 160 L483 160 L489 371 L191 371 Z" fill="#1d2040" />
+            <g class="typed">
+              <rect x="216" y="186" width="168" height="8" rx="4" fill="#a5a3ff" style="--d: 0.15s" />
+              <rect x="216" y="206" width="120" height="8" rx="4" fill="#a5a3ff" opacity=".55" style="--d: 0.3s" />
+              <rect x="216" y="226" width="206" height="8" rx="4" fill="#a5a3ff" opacity=".55" style="--d: 0.45s" />
+              <rect x="216" y="246" width="94" height="8" rx="4" fill="#a5a3ff" opacity=".55" style="--d: 0.6s" />
+              <rect x="216" y="276" width="150" height="8" rx="4" fill="#a5a3ff" style="--d: 0.75s" />
+              <rect x="216" y="296" width="70" height="8" rx="4" fill="#a5a3ff" opacity=".55" style="--d: 0.9s" />
+            </g>
+            <rect x="291" y="295" width="5" height="10" fill="#f7d680" class="caret" />
+            <rect x="211" y="332" width="258" height="24" rx="8" fill="#2a2d5a" />
+          </g>
+          <g class="lid-back">
+            <path d="M188 380 H492 Q500 380 504.5 386 L550 444 Q555 451 546 451 H134 Q125 451 130 444 L175.5 386 Q180 380 188 380 Z" fill="url(#lid)" />
+            <path d="M130 451 H550 L548 457 H132 Z" fill="#b4b7d4" />
+          </g>
+          <path class="seam-glow" d="M142 458 H538" stroke="#a5a3ff" stroke-width="2.5" stroke-linecap="round" />
+
+          <g class="bubble">
+            <path d="M296 296 h96 a26 26 0 0 1 0 52 h-62 l-16 14 l2 -14 h-20 a26 26 0 0 1 0 -52 z" fill="#ffffff" fill-opacity=".14" />
+            <circle class="dot" cx="319" cy="322" r="6.5" fill="#f7d680" />
+            <circle class="dot" cx="344" cy="322" r="6.5" fill="#f7d680" />
+            <circle class="dot" cx="369" cy="322" r="6.5" fill="#f7d680" />
+          </g>
+        </svg>
       </section>
 
-      <section class="chapter" id="evening" data-time="8 PM" data-name="Before you close the lid" data-phase="dusk">
-        <header class="opener">
-          <h2>Before you close the lid</h2>
-          <p class="clock" aria-hidden="true">8 PM</p>
-        </header>
+      <section class="chapter" id="tonight" data-time="8 PM" data-name="Tonight" data-phase="dusk">
+        <div class="steps-frame">
+          <h2>Tonight, in three steps</h2>
+          <div class="steps-row art">
+            <ol class="steps">
+            <li class="step art">
+              <div class="window">
+                <span class="step-num" aria-hidden="true">1</span>
+                <svg viewBox="0 0 240 240" aria-hidden="true" focusable="false">
+                  <g clip-path="url(#round)">
+                    <rect width="240" height="240" fill="url(#sky-dusk)" />
+                    <circle cx="60" cy="34" r="1.5" fill="#fff" opacity=".7" /><circle cx="176" cy="26" r="1.8" fill="#fff" opacity=".7" /><circle cx="120" cy="40" r="1.2" fill="#fff" opacity=".5" />
+                    <rect x="0" y="56" width="240" height="26" fill="#f2f2f7" opacity=".94" />
+                    <rect x="34" y="66" width="12" height="6" rx="3" fill="#5d5d66" opacity=".75" />
+                    <rect x="54" y="66" width="22" height="6" rx="3" fill="#5d5d66" opacity=".45" />
+                    <rect x="84" y="66" width="16" height="6" rx="3" fill="#5d5d66" opacity=".45" />
+                    <rect x="166" y="64" width="17" height="10" rx="2.5" fill="none" stroke="#5d5d66" stroke-width="1.6" />
+                    <rect x="168.5" y="66.5" width="10" height="5" rx="1" fill="#5d5d66" />
+                    <rect x="191" y="66" width="24" height="6" rx="3" fill="#5d5d66" opacity=".75" />
+                    <circle class="ring" cx="145" cy="69" r="13" fill="none" stroke="#f7d680" stroke-width="2.5" />
+                    <use class="pop" href="#crescent" x="136" y="60" width="18" height="18" fill="#1c1c1e" />
+                    <rect x="72" y="140" width="96" height="70" rx="9" fill="#7a7da6" />
+                    <rect x="72" y="132" width="38" height="16" rx="5" fill="#7a7da6" />
+                    <g class="drop">
+                      <rect x="96" y="112" width="48" height="48" rx="12" fill="url(#tile)" />
+                      <use href="#crescent" x="105" y="121" width="30" height="30" fill="#f7d680" />
+                    </g>
+                    <rect x="72" y="150" width="96" height="60" rx="9" fill="#b4b7d4" />
+                    <path d="M108 180 h24" stroke="#9ea1c4" stroke-width="4" stroke-linecap="round" />
+                  </g>
+                </svg>
+              </div>
+              <h3>Download and open Overnight</h3>
+              <p>
+                Drag it into your Applications folder and open it. A small moon appears at the top of your
+                screen, next to the clock.
+              </p>
+              <p class="aside"><a href="#open-anyway">Mac won't open it the first time?</a></p>
+            </li>
+
+            <li class="step art">
+              <div class="window">
+                <span class="step-num" aria-hidden="true">2</span>
+                <svg viewBox="0 0 240 240" aria-hidden="true" focusable="false">
+                  <g clip-path="url(#round)">
+                    <rect width="240" height="240" fill="url(#sky-night)" />
+                    <rect x="0" y="22" width="240" height="22" fill="#f2f2f7" opacity=".94" />
+                    <rect x="110" y="24" width="20" height="18" rx="4" fill="#1c1c1e" opacity=".12" />
+                    <use href="#crescent" x="113" y="26" width="14" height="14" fill="#1c1c1e" />
+                    <rect x="40" y="56" width="160" height="150" rx="13" fill="#f2f2f7" />
+                    <rect x="48" y="64" width="144" height="84" rx="9" fill="url(#tile)" />
+                    <use href="#crescent" x="56" y="70" width="20" height="20" fill="#f7d680" />
+                    <rect x="82" y="74" width="74" height="7" rx="3.5" fill="#fff" opacity=".9" />
+                    <rect x="82" y="86" width="50" height="5" rx="2.5" fill="#fff" opacity=".55" />
+                    <g class="press">
+                      <rect x="50" y="106" width="140" height="30" rx="8" fill="#5856d6" />
+                      <text x="120" y="125.5" text-anchor="middle" fill="#fff" font-size="12.5" font-weight="600" font-family="-apple-system, BlinkMacSystemFont, Helvetica Neue, sans-serif">Keep awake tonight</text>
+                    </g>
+                    <g class="sheet">
+                      <rect x="60" y="150" width="120" height="58" rx="11" fill="#ffffff" />
+                      <rect x="60" y="150" width="120" height="58" rx="11" fill="none" stroke="#1c1c1e" stroke-opacity=".1" />
+                      <rect x="74" y="164" width="16" height="13" rx="3" fill="#f7d680" />
+                      <path d="M77 164 v-4 a5 5 0 0 1 10 0 v4" stroke="#c9a640" stroke-width="2.4" fill="none" />
+                      <rect x="96" y="162" width="72" height="16" rx="4" fill="#e8ebf4" />
+                      <circle class="key" cx="105" cy="170" r="2.4" fill="#1c1c1e" style="--d: 1.55s" />
+                      <circle class="key" cx="113" cy="170" r="2.4" fill="#1c1c1e" style="--d: 1.67s" />
+                      <circle class="key" cx="121" cy="170" r="2.4" fill="#1c1c1e" style="--d: 1.79s" />
+                      <circle class="key" cx="129" cy="170" r="2.4" fill="#1c1c1e" style="--d: 1.91s" />
+                      <circle class="key" cx="137" cy="170" r="2.4" fill="#1c1c1e" style="--d: 2.03s" />
+                      <rect x="128" y="188" width="40" height="11" rx="4" fill="#5856d6" />
+                    </g>
+                    <path class="cursor" d="M152 126 v19 l5 -4.5 l3.5 7.5 l3 -1.4 l-3.4 -7.3 h6.6 z" fill="#fff" stroke="#1c1c1e" stroke-width="1.3" stroke-linejoin="round" />
+                  </g>
+                </svg>
+              </div>
+              <h3>Click the moon, then <span class="ui">Keep awake tonight</span></h3>
+              <p>Your Mac asks for your password. That's expected, and it only asks once a night.</p>
+              <p class="aside"><a href="#lid-lock">Why it needs your password</a></p>
+            </li>
+
+            <li class="step art">
+              <div class="window">
+                <span class="step-num" aria-hidden="true">3</span>
+                <svg viewBox="0 0 240 240" aria-hidden="true" focusable="false">
+                  <g clip-path="url(#round)">
+                    <rect width="240" height="240" fill="url(#sky-deep)" />
+                    <circle cx="40" cy="70" r="1.4" fill="#fff" opacity=".7" /><circle cx="90" cy="34" r="1.8" fill="#fff" opacity=".8" /><circle cx="150" cy="60" r="1.2" fill="#fff" opacity=".6" /><circle cx="210" cy="110" r="1.5" fill="#fff" opacity=".6" />
+                    <use href="#crescent" x="164" y="22" width="48" height="48" fill="#f7d680" />
+                    <polygon class="lamp-light" points="57,104 24,188 104,188" fill="#f7d680" />
+                    <rect x="0" y="188" width="240" height="52" fill="#14163a" opacity=".6" />
+                    <ellipse cx="46" cy="188" rx="15" ry="3.5" fill="#9ea1c4" />
+                    <path d="M46 186 L54 128 L57 84" stroke="#9ea1c4" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                    <path d="M50 80 h14 l9 22 h-32 z" fill="#c9cbe0" />
+                    <ellipse class="bulb" cx="57" cy="103" rx="6" ry="3" fill="#7a7da6" />
+                    <g transform="translate(27 37) scale(.32)">
+                      <path d="M180 382 L500 382 L552 452 L128 452 Z" fill="#d9dbec" />
+                      <path d="M198 390 L482 390 L503 422 L177 422 Z" fill="#b9bcd6" />
+                      <path d="M128 452 L552 452 L546 467 L134 467 Z" fill="#8a8db4" />
+                      <rect x="314" y="459" width="52" height="5" rx="2.5" fill="#6f729c" />
+                      <g class="lid-screen">
+                        <path d="M188 150 L492 150 L500 382 L180 382 Z" fill="#14163a" />
+                        <path d="M197 160 L483 160 L489 371 L191 371 Z" fill="#1d2040" />
+                        <rect x="216" y="190" width="170" height="14" rx="7" fill="#a5a3ff" />
+                        <rect x="216" y="222" width="120" height="14" rx="7" fill="#a5a3ff" opacity=".55" />
+                        <rect x="216" y="254" width="200" height="14" rx="7" fill="#a5a3ff" opacity=".55" />
+                      </g>
+                      <g class="lid-back">
+                        <path d="M188 380 H492 Q500 380 504.5 386 L550 444 Q555 451 546 451 H134 Q125 451 130 444 L175.5 386 Q180 380 188 380 Z" fill="url(#lid)" />
+                        <path d="M130 451 H550 L548 457 H132 Z" fill="#b4b7d4" />
+                      </g>
+                      <path class="seam-glow" d="M142 458 H538" stroke="#a5a3ff" stroke-width="5" stroke-linecap="round" />
+                      <g class="bubble">
+                        <path d="M286 280 h116 a32 32 0 0 1 0 64 h-72 l-20 18 l2 -18 h-26 a32 32 0 0 1 0 -64 z" fill="#ffffff" fill-opacity=".16" />
+                        <circle class="dot" cx="314" cy="312" r="9" fill="#f7d680" />
+                        <circle class="dot" cx="344" cy="312" r="9" fill="#f7d680" />
+                        <circle class="dot" cx="374" cy="312" r="9" fill="#f7d680" />
+                      </g>
+                    </g>
+                  </g>
+                </svg>
+              </div>
+              <h3>Close the lid and go to bed</h3>
+              <p>
+                Claude keeps working. When it's finished, or at 8 in the morning by default, your Mac goes to sleep.
+              </p>
+            </li>
+          </ol>
+          <span class="path path-a" aria-hidden="true"></span>
+          <span class="path path-b" aria-hidden="true"></span>
+          </div>
+        </div>
+
         <div class="column">
-          <p>
-            Click the moon in the menu bar and press <span class="ui">Keep awake tonight</span>. macOS asks for your password once,
-            because only an administrator can stop a MacBook from sleeping when its lid closes. After that you
-            can close the lid and walk away.
-          </p>
-
-          <h3 id="status"><a class="num" href="#top" title="Marker 1 on the popover" aria-label="Marker 1 on the popover">1</a> The top of the popover says what the Mac will do</h3>
-          <p>
-            The top shows a full night sky while Overnight is keeping the Mac awake, and an unlit one while Overnight is
-            armed but letting it sleep because Claude is idle. The morning after a run it turns to dawn and shows
-            how the night went. When something needs you, such as a session that stopped on a usage limit, a
-            note under the headline says so and takes you to it.
-          </p>
-          <figure class="trio">
+          <div class="with-art art" id="lid-lock">
             <div>
-              <img src="assets/popover-armed.png" width="380" height="620" loading="lazy"
-                alt="Awake while Claude works, on a night sky." />
-              <figcaption>Keeping the Mac awake</figcaption>
+              <h2>Why it asks for your password</h2>
+              <p>
+                A MacBook normally goes to sleep the moment you close the lid. Only an administrator can change
+                that, so your Mac asks for your password before Overnight can keep it awake.
+              </p>
+              <p>
+                The permission lasts one night. When the night is over, or you quit Overnight, your Mac goes back
+                to its usual settings and nothing stays behind. The next night, it asks again.
+              </p>
+              <p>On a work Mac, ask your IT team first. Some don't allow this.</p>
             </div>
-            <div>
-              <img src="assets/popover-standby-dark.png" width="380" height="620" loading="lazy"
-                alt="The Mac can sleep: Claude is idle, so closing the lid sleeps the Mac. Shown in dark mode." />
-              <figcaption>Armed, letting it sleep</figcaption>
-            </div>
-            <div>
-              <img src="assets/popover-morning.png" width="380" height="620" loading="lazy"
-                alt="Last night: 11:05 PM to 8:00 AM, reached your 8:00 AM stop time. Claude worked 3h 43m. Two sessions need you." />
-              <figcaption>The morning after</figcaption>
-            </div>
-          </figure>
+            <svg class="window-art" viewBox="0 0 240 240" aria-hidden="true" focusable="false">
+              <g clip-path="url(#round)">
+                <rect width="240" height="240" fill="url(#sky-dusk)" />
+                <circle cx="46" cy="70" r="1.5" fill="#fff" opacity=".7" /><circle cx="196" cy="58" r="1.8" fill="#fff" opacity=".7" /><circle cx="186" cy="176" r="1.3" fill="#fff" opacity=".5" />
+                <path class="shackle" d="M92 118 V92 a28 28 0 0 1 56 0 V118" stroke="#c9cbe0" stroke-width="13" stroke-linecap="round" fill="none" />
+                <rect x="72" y="112" width="96" height="80" rx="16" fill="#f7d680" />
+                <rect x="72" y="160" width="96" height="32" rx="16" fill="#e9bf55" />
+                <rect x="72" y="160" width="96" height="14" fill="#e9bf55" />
+                <use class="keyhole" href="#crescent" x="102" y="128" width="36" height="36" fill="#23264f" />
+              </g>
+            </svg>
+          </div>
 
-          <h3 id="modes"><a class="num" href="#top" title="Marker 2 on the popover" aria-label="Marker 2 on the popover">2</a> Two ways to stay awake</h3>
-          <p>
-            <span class="ui">While Claude works</span> keeps the Mac awake while your Claude Code sessions are busy, and lets it sleep
-            once Claude has been idle for 15 minutes. You can set that anywhere from 1 to 240 minutes with the
-            <span class="ui">Claude is idle after</span> setting. If you close the lid while Claude is already idle, the Mac sleeps
-            straight away.
-          </p>
-          <p><span class="ui">All night</span> keeps the Mac awake until your stop time, whatever Claude is doing.</p>
-
-          <h3 id="stop"><a class="num" href="#top" title="Marker 4 on the popover" aria-label="Marker 4 on the popover">4</a> A time to stop</h3>
-          <p>
-            The <span class="ui">Stop at</span> time ends the run at 8:00 AM unless you change it or turn it off. A run also ends early
-            when one of the guards below steps in, or when you press <span class="ui">Let it sleep</span>.
-          </p>
+          <h3>What Overnight never does</h3>
+          <ul class="plain-list">
+            <li>Delete your files.</li>
+            <li>Send what you're working on anywhere. Its alerts only say what happened.</li>
+            <li>Keep your Mac awake when the battery is nearly empty or the Mac is too warm.</li>
+            <li>Leave special permissions in place after the night ends.</li>
+          </ul>
         </div>
       </section>
 
@@ -165,140 +347,172 @@
           <p class="clock" aria-hidden="true">11 PM</p>
         </header>
         <div class="column">
-          <h3 id="working"><a class="num" href="#top" title="Marker 5 on the popover" aria-label="Marker 5 on the popover">5</a> How Overnight knows Claude is working</h3>
-          <p>
-            Claude counts as working when a Claude Code process is running and one of two things is true: a
-            session under <code>~/.claude/projects</code> recorded something within the idle time, or Claude and
-            the tools it started (builds, tests, shells) are using at least 20% of a CPU core. Sessions in
-            Terminal and in the Claude desktop app both count.
+          <p class="lead">
+            Overnight keeps an eye on your Mac all night. It lets the Mac go to sleep as soon as one of these
+            happens.
           </p>
+          <ul class="watch art">
+            <li>
+              <svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+                <g clip-path="url(#round-small)">
+                  <rect width="120" height="120" fill="url(#sky-night)" />
+                  <path d="M30 40 h60 a16 16 0 0 1 0 32 h-34 l-12 10 l1 -10 h-15 a16 16 0 0 1 0 -32 z" fill="#ffffff" fill-opacity=".16" />
+                  <path class="check" d="M47 56 l9 9 l18 -19" stroke="#f7d680" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                  <text class="zz" x="88" y="38" fill="#c9cbe0" font-size="16" font-weight="700" font-family="-apple-system, Helvetica Neue, sans-serif">z</text>
+                </g>
+              </svg>
+              <div>
+                <h3>Claude is done</h3>
+                <p>Claude has had nothing to do for 15 minutes. It's finished, or it's waiting for you.</p>
+              </div>
+            </li>
+            <li>
+              <svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+                <g clip-path="url(#round-small)">
+                  <rect width="120" height="120" fill="url(#sky-night)" />
+                  <rect x="22" y="44" width="68" height="34" rx="8" fill="none" stroke="#d9dbec" stroke-width="4" />
+                  <rect x="92" y="54" width="6" height="14" rx="2" fill="#d9dbec" />
+                  <rect class="level" x="28" y="50" width="9" height="22" rx="3" fill="#ff7a72" />
+                </g>
+              </svg>
+              <div>
+                <h3>The battery runs low</h3>
+                <p>Below 10%, your Mac sleeps to save what's left. Plug it in for a long night.</p>
+              </div>
+            </li>
+            <li>
+              <svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+                <g clip-path="url(#round-small)">
+                  <rect width="120" height="120" fill="url(#sky-night)" />
+                  <rect x="50" y="18" width="20" height="66" rx="10" fill="#d9dbec" />
+                  <circle cx="60" cy="88" r="15" fill="#ff7a72" />
+                  <rect class="mercury" x="55" y="30" width="10" height="60" rx="5" fill="#ff7a72" />
+                  <path d="M80 34 h8 M80 48 h8 M80 62 h8" stroke="#9ea1c4" stroke-width="3" stroke-linecap="round" />
+                </g>
+              </svg>
+              <div>
+                <h3>The Mac gets too warm</h3>
+                <p>If macOS says it's running hot, it sleeps to cool down. Leave it somewhere airy, not in a bag.</p>
+              </div>
+            </li>
+            <li>
+              <svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+                <defs><clipPath id="horizon"><rect width="120" height="80" /></clipPath></defs>
+                <g clip-path="url(#round-small)">
+                  <rect width="120" height="120" fill="url(#sky-dawn)" />
+                  <g clip-path="url(#horizon)">
+                    <g class="sunrise">
+                      <circle cx="60" cy="80" r="22" fill="#f7d680" />
+                      <path d="M60 46 v-10 M36 56 l-7 -7 M84 56 l7 -7" stroke="#f7d680" stroke-width="4" stroke-linecap="round" />
+                    </g>
+                  </g>
+                  <rect x="0" y="80" width="120" height="40" fill="#23264f" opacity=".55" />
+                </g>
+              </svg>
+              <div>
+                <h3>Morning comes</h3>
+                <p>At 8:00 AM by default. You can pick another time or turn it off.</p>
+              </div>
+            </li>
+          </ul>
           <p>
-            A recorded event is a timestamped line in the session's transcript: a prompt, a reply, a tool result,
-            a retry, or a subagent's work. Overnight ignores the transcript file's modified time, because the
-            Claude desktop app also writes untimed bookkeeping into sessions nobody is using.
-          </p>
-          <p>
-            The session list shows each one as working, idle, paused on a usage limit or stopped after one.
-            The <span class="ui">Notify me when Claude goes idle</span> switch sends a notification when Claude has had no activity
-            for the idle time, which usually means it's finished or waiting for your reply.
+            Overnight tells you when this happens. If you'd rather keep the Mac awake all night, whatever Claude
+            is doing, click the moon and choose <span class="ui">All night</span> instead of
+            <span class="ui">While Claude works</span>.
           </p>
 
-          <h3 id="lid-lock">How the lid stays awake</h3>
-          <p>
-            Pressing <span class="ui">Keep awake tonight</span> starts a small root shell script that runs <code>pmset</code>, the macOS
-            command that controls sleep. For the rest of the night the app steers it with files in <code>~/Library/Application Support/dev.local.overnight/ctl/</code>, so it never
-            needs your password again that night.
-          </p>
-          <figure class="flow" aria-label="How Overnight holds the lid lock">
-            <ol>
-              <li><strong>Overnight</strong><span>decides whether to hold</span></li>
-              <li><strong><code>ctl/hold</code></strong><span>exists while it should</span></li>
-              <li><strong>Root helper</strong><span>checks every 5 seconds</span></li>
-              <li><strong><code>pmset disablesleep 1</code></strong><span>the lid can close</span></li>
-            </ol>
-            <figcaption>Removing <code>hold</code> lets the Mac sleep again; <code>release</code> ends the helper.</figcaption>
-          </figure>
-          <p>
-            The helper restores the original setting and exits as soon as the app quits or crashes. It lets the
-            Mac sleep by itself at 8% battery even if the app is stuck, and if something else turns sleep back on
-            during the night, it puts the hold back within 30 seconds and Overnight tells you. Nothing is installed
-            system-wide: no sudoers entry, launch daemon or kernel extension.
-          </p>
-
-          <h3>Guards</h3>
-          <p>
-            On battery, Overnight lets the Mac sleep once the charge drops below 10%. It does the same if macOS
-            reports the Mac is running hot. You can change the floor or turn off the heat check, and you get a
-            notification whenever a guard ends the night. A Mac kept awake in a bag still gets warm, so leave it
-            somewhere with airflow.
-          </p>
-
-          <div class="side">
-            <img src="assets/popover-phone.png" width="380" height="551" loading="lazy"
-              alt="The Phone section: Send alerts to my phone is on, with an ntfy topic address, a Copy topic name button, Only when I'm away, and Send a test alert." />
+          <div class="with-art art" id="phone-alerts">
             <div>
-              <h3 id="phone-alerts">Alerts on your phone</h3>
+              <h2>Get a message on your phone</h2>
               <p>
-                Overnight can send its alerts to your phone through <a href="https://ntfy.sh">ntfy</a>, a free,
-                open-source push service. Turn on <span class="ui">Send alerts to my phone</span>, install the ntfy app, subscribe to
-                the topic Overnight made for you, and press <span class="ui">Send a test alert</span>. On an iPhone,
-                <span class="ui">Copy topic name</span> and Universal Clipboard save you typing it.
+                Overnight can send its alerts to your phone through <a href="https://ntfy.sh">ntfy</a>, a free app
+                for iPhone and Android.
               </p>
-              <p>
-                Alerts never name a session or project. Anyone who knows an ntfy.sh topic name can read it, so
-                keep the random one or use your own ntfy server. With <span class="ui">Only when I'm away</span> on, alerts go to your
-                phone only while the lid is closed or nobody has touched the keyboard or mouse for 5 minutes.
-              </p>
-              <p>
-                Claude's own phone notifications need Remote Control, which some organizations turn off. These
-                alerts don't depend on it.
-              </p>
+              <ol class="numbered">
+                <li>Install the ntfy app from the App Store or Google Play.</li>
+                <li>Click the moon on your Mac and turn on <span class="ui">Send alerts to my phone</span>.</li>
+                <li>Press <span class="ui">Copy topic name</span>. In the ntfy app, tap + and paste it.</li>
+                <li>Press <span class="ui">Send a test alert</span>. Your phone should buzz.</li>
+              </ol>
             </div>
+            <svg class="window-art" viewBox="0 0 240 240" aria-hidden="true" focusable="false">
+              <g clip-path="url(#round)">
+                <rect width="240" height="240" fill="url(#sky-night)" />
+                <use href="#crescent" x="176" y="34" width="38" height="38" fill="#f7d680" />
+                <circle cx="44" cy="76" r="1.5" fill="#fff" opacity=".7" /><circle cx="196" cy="150" r="1.4" fill="#fff" opacity=".6" />
+                <g class="buzz">
+                  <rect x="76" y="34" width="88" height="184" rx="18" fill="#14163a" />
+                  <rect x="82" y="40" width="76" height="172" rx="13" fill="url(#tile)" />
+                  <rect x="106" y="46" width="28" height="7" rx="3.5" fill="#14163a" />
+                  <g class="notif">
+                    <rect x="86" y="66" width="68" height="36" rx="9" fill="#f2f2f7" />
+                    <rect x="91" y="72" width="13" height="13" rx="3.5" fill="url(#tile)" />
+                    <use href="#crescent" x="93" y="74" width="9" height="9" fill="#f7d680" />
+                    <rect x="108" y="73" width="30" height="5" rx="2.5" fill="#1c1c1e" />
+                    <rect x="108" y="82" width="40" height="4" rx="2" fill="#8e8e93" />
+                    <rect x="91" y="92" width="52" height="4" rx="2" fill="#8e8e93" />
+                  </g>
+                </g>
+              </g>
+            </svg>
           </div>
+          <p>
+            Alerts only say what happened, such as Claude going idle or the battery running low. They never say
+            what Claude was working on. Anyone who knows your topic name could read them, so keep the random
+            name Overnight picks.
+          </p>
+          <p>Alerts only go to your phone while you're away: when the lid is closed, or nobody has used the Mac for 5 minutes.</p>
         </div>
       </section>
 
-      <section class="chapter" id="reset" data-time="2 AM" data-name="At the usage-limit reset" data-phase="rose">
+      <section class="chapter" id="reset" data-time="2 AM" data-name="Usage limits" data-phase="rose">
         <header class="opener">
-          <h2>When Claude hits a usage limit</h2>
+          <h2>If Claude hits its usage limit</h2>
           <p class="clock" aria-hidden="true">2 AM</p>
         </header>
         <div class="column">
-          <p>
-            A session that hits Claude's usage limit pauses until the limit resets. Claude can carry on by itself
-            at that point, but only if the Mac is awake. A session that sleeps through the reset for more than
-            about 30 minutes stops at "Press enter to continue".
-          </p>
-
-          <h3 id="limits"><a class="num" href="#top" title="Marker 3 on the popover" aria-label="Marker 3 on the popover">3</a> Overnight waits for the reset</h3>
-          <p>
-            In While Claude works mode, Overnight keeps the Mac awake until 10 minutes after a pending reset,
-            even though Claude looks idle in the meantime. Turn off <span class="ui">Wait for usage-limit resets</span> if you'd
-            rather the Mac slept. All night mode stays awake anyway, unless your stop time comes first, and the popover
-            warns you when it will.
-          </p>
-          <figure class="pair">
+          <div class="with-art art">
             <div>
-              <img src="assets/popover-auto-off.png" width="380" height="620" loading="lazy"
-                alt="Waiting for the usage limit to reset. Auto-continue is off in Claude Code, so Claude won't continue by itself. A Turn on auto-continue section is open." />
-              <figcaption>Paused, with auto-continue off</figcaption>
+              <p>
+                Claude has usage limits. When it reaches one, it pauses until the limit resets, sometimes in the
+                middle of the night.
+              </p>
+              <p>
+                Claude can carry on by itself when the limit resets, but only if your Mac is awake. So Overnight
+                keeps it awake until then, even though Claude looks idle while it waits.
+              </p>
             </div>
-            <div>
-              <img src="assets/popover-limit.png" width="380" height="620" loading="lazy"
-                alt="Claude didn't continue after the reset. Two sessions are still stopped; open each one and send continue. Below, steps to make it continue by itself next time." />
-              <figcaption>Stopped after the reset</figcaption>
-            </div>
-          </figure>
-
-          <h3>Whether Claude continues by itself</h3>
-          <p>That part is up to Claude's own settings. Overnight reads them and tells you when they'll get in the way.</p>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr><th scope="col">Where</th><th scope="col">Setting</th></tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Claude Code, <code>~/.claude/settings.json</code></td>
-                  <td><code>"autoContinueAtUsageLimit"</code> is on unless set to <code>false</code> (Claude Code 2.1.234 or later)</td>
-                </tr>
-                <tr>
-                  <td>The <code>env</code> block in the same file</td>
-                  <td><code>"CLAUDE_CODE_RETRY_WATCHDOG": "1"</code> keeps a session retrying until the reset</td>
-                </tr>
-                <tr>
-                  <td>Claude desktop app, Code tab</td>
-                  <td>Tick <span class="ui">Auto-continue when limits reset</span> on the session's usage-limit card</td>
-                </tr>
-              </tbody>
-            </table>
+            <svg class="window-art" viewBox="0 0 240 240" aria-hidden="true" focusable="false">
+              <defs>
+                <clipPath id="glass-top"><path d="M84 62 h72 c0 26 -24 40 -32 54 h-8 c-8 -14 -32 -28 -32 -54 z" /></clipPath>
+                <clipPath id="glass-bottom"><path d="M116 124 h8 c8 14 32 28 32 54 h-72 c0 -26 24 -40 32 -54 z" /></clipPath>
+              </defs>
+              <g clip-path="url(#round)">
+                <rect width="240" height="240" fill="url(#sky-rose)" />
+                <circle cx="44" cy="80" r="1.5" fill="#fff" opacity=".7" /><circle cx="200" cy="64" r="1.6" fill="#fff" opacity=".6" />
+                <path d="M84 62 h72 c0 26 -24 40 -32 58 c8 18 32 32 32 58 h-72 c0 -26 24 -40 32 -58 c-8 -18 -32 -32 -32 -58 z" fill="#ffffff" fill-opacity=".12" stroke="#d9dbec" stroke-width="3" />
+                <g clip-path="url(#glass-top)"><rect class="sand-top" x="80" y="104" width="80" height="16" fill="#f7d680" /></g>
+                <g clip-path="url(#glass-bottom)"><rect class="sand-bottom" x="80" y="140" width="80" height="40" fill="#f7d680" /></g>
+                <rect class="stream" x="118.5" y="118" width="3" height="56" fill="#f7d680" />
+                <rect x="72" y="52" width="96" height="12" rx="6" fill="#c9cbe0" />
+                <rect x="72" y="176" width="96" height="12" rx="6" fill="#c9cbe0" />
+                <g class="resume">
+                  <circle cx="176" cy="178" r="22" fill="#f7d680" />
+                  <path d="M170 167 l16 11 l-16 11 z" fill="#3a316f" />
+                </g>
+              </g>
+            </svg>
           </div>
+
+          <h3>Make sure Claude continues by itself</h3>
           <p>
-            When a session still hasn't continued 10 minutes after the reset, you get a notification. The popover
-            tells you to open the session and send "continue", and has a prompt you can paste into Claude so it
-            checks these settings for you. The Claude Code docs cover
-            <a href="https://code.claude.com/docs/en/interactive-mode.md#wait-for-a-usage-limit-to-reset">waiting for a usage limit to reset</a>
-            and the <a href="https://code.claude.com/docs/en/settings-reference.md#autocontinueatusagelimit">autoContinueAtUsageLimit setting</a>.
+            In the Claude app, when the usage-limit message appears, tick
+            <span class="ui">Auto-continue when limits reset</span>. If you use Claude Code in Terminal, Overnight shows
+            a short message you can copy into Claude so it checks this for you.
+          </p>
+          <p>
+            If Claude still hasn't continued 10 minutes after the reset, Overnight lets you know. In the morning it
+            shows which sessions need you: open each one and type "continue".
           </p>
         </div>
       </section>
@@ -309,149 +523,127 @@
           <p class="clock" aria-hidden="true">8 AM</p>
         </header>
         <div class="column">
-          <div class="side">
-            <img src="assets/popover-morning.png" width="380" height="620" loading="lazy"
-              alt="The morning summary on a dawn background: Last night, 11:05 PM to 8:00 AM, with the time Claude worked, the time held awake and the battery change." />
+          <div class="with-art art">
             <div>
               <p>
-                The first time you open the popover after a run, it shows how the night went: when it ran and how
-                it ended, how long Claude worked, how long the Mac was held awake out of the whole run, and the
-                battery change. Held time is shorter than the run when Overnight let the Mac sleep while Claude was
-                idle.
+                Click the moon to see how the night went: how long Claude worked, how long your Mac stayed awake
+                and how much battery it used.
               </p>
               <p>
-                If sessions stopped on a usage limit, "2 sessions need you" takes you to them. The summary stays
-                until you hide it, start another run, or 16 hours pass.
+                If a session stopped and needs you, Overnight says which one and what to do. It also warns you when
+                your disk is getting full, and can ask Claude to tidy up while you watch.
               </p>
             </div>
-          </div>
-
-          <div class="side reverse">
-            <img src="assets/popover-log.png" width="380" height="620" loading="lazy"
-              alt="The Log tab: a summary of the last run, then each event of the night in order, from arming at 11:05 PM to reaching the 8:00 AM stop time." />
-            <div>
-              <h3>The log</h3>
-              <p>
-                The Log tab lists the night in order: when you armed it, when the lid closed and opened, when the
-                Mac switched to battery, when Claude started and stopped working, usage limits, guards and a
-                battery reading every half hour. It keeps about a day and a half, and the file itself stays under
-                about 2 MB.
-              </p>
-            </div>
-          </div>
-
-          <div class="side">
-            <img src="assets/popover-storage.png" width="380" height="620" loading="lazy"
-              alt="The Storage tab: free space, a warning threshold of 30 GB, and a list of folders taking space such as Xcode DerivedData and simulators, with an Ask Claude to clean up button." />
-            <div>
-              <h3>Disk space</h3>
-              <p>
-                Long Claude runs fill disks with builds, caches and worktrees. Overnight warns you when free space
-                drops below 30 GB and measures the usual culprits, such as Xcode DerivedData, simulators, package
-                caches and Claude worktrees.
-              </p>
-              <p>
-                The <span class="ui">Ask Claude to clean up</span> button opens Claude Code in Terminal with your cleanup request, so you can watch it
-                and answer its questions. Overnight never deletes anything itself.
-              </p>
-            </div>
+            <svg class="window-art" viewBox="0 0 240 240" aria-hidden="true" focusable="false">
+              <defs><clipPath id="desk-line"><rect width="240" height="172" /></clipPath></defs>
+              <g clip-path="url(#round)">
+                <rect width="240" height="240" fill="url(#sky-dawn)" />
+                <use class="moonset" href="#crescent" x="34" y="30" width="34" height="34" fill="#f7d680" />
+                <g clip-path="url(#desk-line)">
+                  <g class="sunrise">
+                    <circle cx="160" cy="166" r="36" fill="#f7d680" />
+                  </g>
+                </g>
+                <rect x="0" y="170" width="240" height="70" fill="#23264f" opacity=".7" />
+                <path d="M56 152 h96 l14 18 h-124 z" fill="url(#lid)" />
+                <path d="M42 170 h124 l-2 6 h-120 z" fill="#9ea1c4" />
+                <text class="zz" x="100" y="142" fill="#23264f" font-size="22" font-weight="700" font-family="-apple-system, Helvetica Neue, sans-serif">z</text>
+                <text class="zz zz-2" x="118" y="122" fill="#23264f" font-size="16" font-weight="700" font-family="-apple-system, Helvetica Neue, sans-serif">z</text>
+                <rect x="182" y="146" width="24" height="26" rx="5" fill="#f2f2f7" />
+                <path d="M206 152 a7 7 0 0 1 0 14" stroke="#f2f2f7" stroke-width="4" fill="none" />
+                <path class="steam" d="M190 138 c-4 -6 4 -10 0 -16 M199 138 c-4 -6 4 -10 0 -16" stroke="#fff" stroke-width="2.5" stroke-linecap="round" fill="none" opacity=".7" />
+              </g>
+            </svg>
           </div>
         </div>
       </section>
 
-      <section class="chapter" id="install" data-time="Daytime" data-name="Install" data-phase="day">
+      <section class="chapter" id="install" data-time="Day" data-name="Install" data-phase="day">
         <header class="opener">
           <h2>Install</h2>
           <p class="clock" aria-hidden="true">Day</p>
         </header>
         <div class="column">
-          <p>
-            <a href="https://github.com/dienp/overnight/releases/latest/download/Overnight-macos.zip">Download Overnight</a>, open the zip and move Overnight to your Applications folder.
-            <span data-version>The latest version</span> runs on macOS 12 or later, on Apple silicon and Intel Macs.
-            To start it at login, add it under System Settings, General, Login Items.
-          </p>
-          <p>
-            Overnight isn't notarized by Apple yet, so the first time you open it, macOS says it can't check it for
-            malicious software. Open System Settings, go to Privacy &amp; Security and click
-            <span class="ui">Open Anyway</span> next to Overnight. On macOS 14 and earlier you can Control-click the app and
-            choose <span class="ui">Open</span> instead. You only do this once.
-          </p>
-          <p>
-            Every change to the app that lands on the main branch is published as a new version on the
-            <a href="https://github.com/dienp/overnight/releases">Releases page</a>. To update, quit Overnight, then
-            download and replace it the same way.
+          <svg class="install-art art" viewBox="0 0 560 170" aria-hidden="true" focusable="false">
+            <defs><clipPath id="pill"><rect width="560" height="170" rx="85" /></clipPath></defs>
+            <g clip-path="url(#pill)">
+              <rect width="560" height="170" fill="url(#sky-dusk)" />
+              <circle cx="120" cy="30" r="1.5" fill="#fff" opacity=".6" /><circle cx="300" cy="22" r="1.8" fill="#fff" opacity=".6" /><circle cx="470" cy="34" r="1.4" fill="#fff" opacity=".6" />
+              <path d="M96 52 h40 l18 18 v56 a6 6 0 0 1 -6 6 h-52 a6 6 0 0 1 -6 -6 v-68 a6 6 0 0 1 6 -6 z" fill="#e8ebf4" />
+              <path d="M136 52 v18 h18" fill="#c9cbe0" />
+              <path d="M118 56 v8 M118 70 v8 M118 84 v8 M118 98 v8" stroke="#9ea1c4" stroke-width="5" />
+              <rect x="112" y="108" width="12" height="14" rx="3" fill="#9ea1c4" />
+              <path d="M176 92 h204" stroke="#f7d680" stroke-width="3" stroke-linecap="round" stroke-dasharray="0 10" />
+              <rect x="400" y="62" width="92" height="66" rx="9" fill="#7a7da6" />
+              <rect x="400" y="54" width="36" height="16" rx="5" fill="#7a7da6" />
+              <g class="slide">
+                <rect x="252" y="64" width="56" height="56" rx="14" fill="url(#tile)" />
+                <rect x="252" y="64" width="56" height="56" rx="14" fill="none" stroke="#ffffff" stroke-opacity=".18" />
+                <use href="#crescent" x="263" y="75" width="34" height="34" fill="#f7d680" />
+              </g>
+              <rect x="400" y="80" width="92" height="56" rx="9" fill="#b4b7d4" />
+              <path d="M434 108 h24" stroke="#9ea1c4" stroke-width="4" stroke-linecap="round" />
+            </g>
+          </svg>
+
+          <ol class="numbered">
+            <li><a href="https://github.com/dienp/overnight/releases/latest/download/Overnight-macos.zip">Download Overnight</a>. It's free.</li>
+            <li>Open the zip in your Downloads folder, then drag Overnight into Applications.</li>
+            <li>Open Overnight from Applications.</li>
+          </ol>
+          <p class="note">
+            <span data-version>The latest version</span> needs macOS 12 or later and works on any Mac, with Apple
+            silicon or Intel.
           </p>
 
-          <h3 id="build">Build it yourself</h3>
+          <h3 id="open-anyway">If your Mac won't open it</h3>
           <p>
-            You need Node and Rust; if Rust came from Homebrew's keg-only <code>rustup</code>, the npm scripts find it.
+            The first time, your Mac may say it can't check Overnight for malicious software. That's because
+            Overnight isn't registered with Apple yet. You only need to do this once:
           </p>
-<pre><code>git clone https://github.com/dienp/overnight.git
-cd overnight
-npm install
-npm run build</code></pre>
+          <ol class="numbered">
+            <li>Open System Settings and click Privacy &amp; Security.</li>
+            <li>Scroll down and click <span class="ui">Open Anyway</span> next to Overnight.</li>
+          </ol>
           <p>
-            That makes <code>src-tauri/target/release/bundle/macos/Overnight.app</code>. <code>npm run dev</code> runs it
-            with hot reload while you work on it.
+            To have Overnight start when you log in, add it in System Settings, under General, then Login Items.
+            New versions appear on the <a href="https://github.com/dienp/overnight/releases">Releases page</a>. To
+            update, quit Overnight, download it again and replace the old one.
           </p>
-          <p>
-            If linking fails with <code>tapi</code> errors about an unknown architecture, your Command Line Tools linker
-            and your Xcode SDK disagree. Create <code>src-tauri/.cargo/config.toml</code> to use the Command Line Tools
-            for both. Git ignores that file.
-          </p>
-<pre><code>[env]
-DEVELOPER_DIR = "/Library/Developer/CommandLineTools"
-SDKROOT = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"</code></pre>
 
-          <h2 class="plain" id="reference">Reference</h2>
-
-          <h3>What Overnight never does</h3>
-          <ul>
-            <li>Install anything system-wide, or keep administrator rights after the night ends.</li>
-            <li>Delete files. Cleanup is always handed to Claude in Terminal, where you can watch it.</li>
-            <li>Send session titles or project names anywhere. Phone alerts carry only what happened.</li>
-            <li>Keep the Mac awake past the battery floor or the heat guard.</li>
-          </ul>
-
-          <h3>Where it keeps things</h3>
-          <p>Everything lives in <code>~/Library/Application Support/dev.local.overnight/</code>.</p>
-          <div class="table-wrap">
-            <table class="files">
-              <thead>
-                <tr><th scope="col">File</th><th scope="col">What it holds</th></tr>
-              </thead>
-              <tbody>
-                <tr><td><code>settings.json</code></td><td>Your settings</td></tr>
-                <tr><td><code>events.jsonl</code></td><td>The log, trimmed to about 2 MB</td></tr>
-                <tr><td><code>ctl/</code></td><td>The helper's <code>hold</code>, <code>release</code> and <code>pid</code> files</td></tr>
-                <tr><td><code>cleanup.command</code></td><td>The script the <span class="ui">Ask Claude to clean up</span> button runs</td></tr>
-              </tbody>
-            </table>
+          <h2 class="plain" id="questions">Questions</h2>
+          <div class="faq">
+            <h3>Which Claude does it work with?</h3>
+            <p>Claude Code, in the Code tab of the Claude desktop app or in Terminal.</p>
+            <h3>How do I stop it?</h3>
+            <p>
+              Click the moon and press <span class="ui">Let it sleep</span>. Quitting Overnight works too, and your
+              Mac goes back to normal straight away.
+            </p>
+            <h3>Does it use much battery?</h3>
+            <p>
+              Overnight itself uses almost nothing. Keeping a Mac awake does use battery, so plug it in for a long
+              night. On battery, Overnight lets the Mac sleep at 10%.
+            </p>
+            <h3>Something went wrong</h3>
+            <p>
+              Choose <span class="ui">Report a Problem</span> in Overnight's menu, or
+              <a href="https://github.com/dienp/overnight/issues/new">tell us on GitHub</a>.
+            </p>
+            <h3>I'm a developer. How does it work?</h3>
+            <p>
+              The <a href="https://github.com/dienp/overnight#readme">README on GitHub</a> explains how Overnight keeps
+              the lid closed, how it tells when Claude is working, and how to build it yourself.
+            </p>
           </div>
-
-          <h3>Resource use</h3>
-          <p>
-            Overnight reads the battery, the lid and the sleep setting directly from macOS and runs no commands on
-            its regular checks. It checks every 10 seconds while it's keeping the Mac awake or the popover is open,
-            and every 30 seconds otherwise. Overnight unloads the popover a few seconds after you close it, so while
-            it's closed the app uses around 20 to 30 MB.
-          </p>
-
-          <h3>Things to know</h3>
-          <p>
-            On a managed work Mac, check that your IT policy allows running <code>pmset</code>, the macOS command that
-            controls sleep, as an administrator.
-            Notifications ask for permission the first time the app sends one.
-          </p>
         </div>
       </section>
     </main>
 
     <footer class="end">
       <p>
-        Overnight is on <a href="https://github.com/dienp/overnight">GitHub</a>. Found a problem?
-        <a href="https://github.com/dienp/overnight/issues/new">Open an issue</a>, or use Report a Problem in
-        the menu bar icon's menu. The screenshots show sample sessions.
+        <svg class="moon" viewBox="0 0 36 36" aria-hidden="true"><use href="#crescent" /></svg>
+        <span>Overnight is on <a href="https://github.com/dienp/overnight">GitHub</a>.</span>
       </p>
     </footer>
   </body>
