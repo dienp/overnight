@@ -1,0 +1,751 @@
+/* Overnight documentation. The app's world owns the frame (the night sky,
+   the moon-gold markers, section openers that move from dusk to daylight);
+   the reading column inside it stays calm. */
+
+:root {
+  --night-a: #23264f;
+  --night-b: #3a316f;
+  --dusk-a: #2a2d3b;
+  --dusk-b: #3f4459;
+  --rose: #6b4a7a;
+  --dawn-mid: #7a4f66;
+  --dawn: #c9875a;
+  --moon: #f7d680;
+
+  --ground: #f7f7fa;
+  --card: #ffffff;
+  --ink: #1c1c1e;
+  --muted: #5d5d66;
+  --line: rgba(28, 28, 30, 0.12);
+  --accent: #5856d6;
+  --code-ground: #1d2040;
+  --code-ink: #e9e9f6;
+  --inline-code: rgba(88, 86, 214, 0.09);
+  --day: #e8ebf4;
+  --bar-day: rgba(247, 247, 250, 0.92);
+  --shadow: drop-shadow(0 18px 34px rgba(20, 22, 50, 0.28));
+
+  --bar-h: 52px;
+  --measure: 68ch;
+  --gutter: 24px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground: #141418;
+    --card: #1e1e24;
+    --ink: #ececf1;
+    --muted: #a3a3ab;
+    --line: rgba(255, 255, 255, 0.12);
+    --accent: #a5a3ff;
+    --code-ground: #1a1c34;
+    --inline-code: rgba(165, 163, 255, 0.14);
+    --day: #22242e;
+    --bar-day: rgba(20, 20, 24, 0.92);
+    --shadow: drop-shadow(0 18px 34px rgba(0, 0, 0, 0.55));
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-padding-top: calc(var(--bar-h) + 12px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font: 17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: var(--accent);
+  text-underline-offset: 3px;
+}
+
+::selection {
+  background: rgba(247, 214, 128, 0.55);
+  color: #1c1c1e;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.intro :focus-visible,
+.opener :focus-visible,
+.bar:not([data-phase="day"]) :focus-visible {
+  outline-color: var(--moon);
+}
+
+code,
+pre {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+:not(pre) > code {
+  font-size: 0.86em;
+  background: var(--inline-code);
+  padding: 1px 5px;
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+}
+
+.skip {
+  position: absolute;
+  left: 12px;
+  top: -48px;
+  z-index: 10;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--moon);
+  color: var(--night-a);
+  font-weight: 600;
+}
+
+.skip:focus {
+  top: 8px;
+}
+
+/* The bar: a running head that shows where in the night the reader is. */
+
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  height: var(--bar-h);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 var(--gutter);
+  color: #fff;
+  background: var(--dusk-a);
+  transition: background-color 0.5s ease-out, color 0.5s ease-out;
+}
+
+.bar[data-phase="night"] {
+  background: var(--night-a);
+}
+
+.bar[data-phase="rose"] {
+  background: #4a3a68;
+}
+
+.bar[data-phase="dawn"] {
+  background: #7a5266;
+}
+
+.bar[data-phase="day"] {
+  background: var(--bar-day);
+  color: var(--ink);
+  box-shadow: 0 1px 0 var(--line);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: inherit;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.brand .moon {
+  width: 22px;
+  height: 22px;
+}
+
+.moon-body {
+  fill: var(--moon);
+}
+
+.moon-star {
+  fill: var(--moon);
+}
+
+.bar[data-phase="day"] .moon-body,
+.bar[data-phase="day"] .moon-star {
+  fill: #c69a2e;
+}
+
+.phase {
+  margin: 0;
+  font-size: 14px;
+  white-space: nowrap;
+  opacity: 0.85;
+}
+
+#phase-time {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  margin-right: 6px;
+}
+
+.bar nav {
+  margin-left: auto;
+  display: flex;
+  gap: 18px;
+  font-size: 14px;
+}
+
+.bar nav a {
+  color: inherit;
+  text-decoration: none;
+  opacity: 0.85;
+}
+
+.bar nav a:hover,
+.bar nav a[aria-current="true"] {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+/* First viewport: the popover, annotated. */
+
+.intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px minmax(220px, 280px);
+  align-items: center;
+  gap: 48px;
+  min-height: min(calc(100vh - var(--bar-h)), 860px);
+  padding: 56px max(var(--gutter), calc((100vw - 1180px) / 2)) 64px;
+  color: #fff;
+  background: linear-gradient(165deg, var(--dusk-a) 0%, var(--night-a) 48%, var(--night-b) 100%);
+}
+
+.intro h1 {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 18px;
+  font-size: clamp(44px, 5.4vw, 72px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.intro h1 .moon {
+  width: 0.82em;
+  height: 0.82em;
+  flex: none;
+}
+
+.lede {
+  margin: 0;
+  max-width: 34ch;
+  font-size: 20px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 28px 0 0;
+}
+
+.button {
+  display: inline-block;
+  padding: 11px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  text-decoration: none;
+  background: var(--moon);
+  color: var(--night-a);
+}
+
+.button.ghost {
+  background: transparent;
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+}
+
+.button:hover {
+  filter: brightness(1.06);
+}
+
+.meta {
+  margin: 16px 0 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.menubar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 36px 0 0;
+}
+
+.menubar-strip {
+  flex: none;
+  display: inline-flex;
+  gap: 14px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* The menu bar icons are black template images; the bar shows them white. */
+.menubar-strip img {
+  display: block;
+  filter: invert(1);
+}
+
+.menubar figcaption {
+  font-size: 14px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.annotated {
+  margin: 0;
+}
+
+.popover-frame {
+  position: relative;
+  width: 380px;
+  max-width: 100%;
+}
+
+.popover-frame img {
+  display: block;
+  filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.5));
+}
+
+.marker,
+.num {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--moon);
+  color: var(--night-a);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.marker {
+  position: absolute;
+  right: -14px;
+  top: var(--y);
+  transform: translateY(-50%);
+  box-shadow: 0 0 0 5px rgba(247, 214, 128, 0.22), 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.marker:hover {
+  box-shadow: 0 0 0 7px rgba(247, 214, 128, 0.35), 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.annotated figcaption {
+  margin-top: 18px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 18px;
+}
+
+.legend a {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  column-gap: 12px;
+  color: #fff;
+  text-decoration: none;
+}
+
+.legend strong {
+  font-size: 16px;
+  line-height: 28px;
+}
+
+.legend span:not(.num) {
+  grid-column: 2;
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.legend a:hover strong {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Chapters: an opener band carrying the time of night, then the column. */
+
+.opener {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 44px max(var(--gutter), calc((100% - var(--measure)) / 2)) 40px;
+  color: #fff;
+}
+
+.opener h2 {
+  margin: 0;
+  font-size: clamp(28px, 3.4vw, 38px);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.clock {
+  margin: 0;
+  font-size: clamp(28px, 3.4vw, 40px);
+  font-weight: 600;
+  color: var(--moon);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+[data-phase="dusk"] > .opener {
+  background: linear-gradient(180deg, var(--dusk-b), var(--dusk-a));
+}
+
+[data-phase="night"] > .opener {
+  background: linear-gradient(180deg, var(--night-a), #1b1e41);
+}
+
+[data-phase="rose"] > .opener {
+  background: linear-gradient(180deg, var(--night-b) 0%, #4f3d70 60%, var(--rose) 100%);
+}
+
+/* Dawn: the text sits on dawn rose; the amber is a low horizon band below it. */
+[data-phase="dawn"] > .opener {
+  background: linear-gradient(180deg, var(--rose), var(--dawn-mid));
+  box-shadow: inset 0 -10px 0 var(--dawn);
+}
+
+[data-phase="day"] > .opener {
+  background: var(--day);
+  color: var(--ink);
+}
+
+[data-phase="day"] > .opener .clock {
+  color: #a87a14;
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-phase="day"] > .opener .clock {
+    color: var(--moon);
+  }
+}
+
+.column {
+  max-width: calc(var(--measure) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: 36px var(--gutter) 72px;
+}
+
+.column h2.plain {
+  margin: 72px 0 0;
+  padding-top: 32px;
+  border-top: 1px solid var(--line);
+  font-size: 30px;
+  letter-spacing: -0.02em;
+}
+
+.column h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 2.2em 0 0.4em;
+  font-size: 22px;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.column h3 .num {
+  width: 26px;
+  height: 26px;
+  font-size: 13px;
+}
+
+.column p {
+  margin: 0.8em 0;
+}
+
+.column ul {
+  padding-left: 1.2em;
+}
+
+.column li {
+  margin: 0.35em 0;
+}
+
+pre {
+  margin: 1.2em 0;
+  padding: 16px 18px;
+  border-radius: 10px;
+  background: var(--code-ground);
+  color: var(--code-ink);
+  font-size: 14px;
+  line-height: 1.55;
+  overflow-x: auto;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  margin: 1.2em 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+th,
+td {
+  padding: 10px 12px 10px 0;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+}
+
+th {
+  font-weight: 600;
+}
+
+/* Screenshots. Figures may run wider than the text column. */
+
+.trio,
+.pair,
+.side {
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(var(--wide, 900px), 100vw - 2 * var(--gutter));
+  margin: 32px 0;
+}
+
+.trio,
+.pair {
+  display: grid;
+  gap: 28px;
+}
+
+.trio {
+  --wide: 960px;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.pair {
+  --wide: 800px;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.trio img,
+.pair img,
+.side img {
+  display: block;
+  margin: 0 auto;
+  filter: var(--shadow);
+}
+
+.trio figcaption,
+.pair figcaption {
+  margin-top: 12px;
+  font-size: 14px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.side {
+  --wide: 900px;
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  align-items: center;
+  gap: 40px;
+}
+
+.side img {
+  width: 300px;
+}
+
+.side.reverse img {
+  order: 2;
+}
+
+.side p:first-child {
+  margin-top: 0;
+}
+
+/* How the lid lock works, as a sequence. */
+
+.flow {
+  margin: 28px 0;
+}
+
+.flow ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 22px;
+}
+
+.flow li {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border-radius: 10px;
+  background: var(--card);
+  box-shadow: 0 0 0 1px var(--line);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.flow li strong {
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+
+.flow li span {
+  color: var(--muted);
+}
+
+/* A drawn arrow between steps. */
+.flow li + li::before {
+  content: "";
+  position: absolute;
+  left: -17px;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-top: 2px solid var(--muted);
+  border-right: 2px solid var(--muted);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.flow figcaption {
+  margin-top: 12px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.end {
+  padding: 32px var(--gutter) 48px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+}
+
+/* Narrower screens. */
+
+@media (max-width: 1180px) {
+  .intro {
+    grid-template-columns: 380px minmax(0, 1fr);
+    row-gap: 40px;
+  }
+
+  .intro-text {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 860px) {
+  .bar nav a:not(:last-child) {
+    display: none;
+  }
+
+  .trio {
+    grid-template-columns: 1fr;
+  }
+
+  .pair {
+    grid-template-columns: 1fr;
+  }
+
+  .trio img,
+  .pair img {
+    width: 280px;
+  }
+
+  .side,
+  .side.reverse {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .side img,
+  .side.reverse img {
+    order: 0;
+    width: 280px;
+  }
+
+  .flow ol {
+    grid-template-columns: 1fr;
+  }
+
+  .flow li + li::before {
+    left: 24px;
+    top: -15px;
+    transform: rotate(135deg);
+  }
+}
+
+@media (max-width: 700px) {
+  .phase {
+    display: none;
+  }
+
+  .intro {
+    grid-template-columns: 1fr;
+    padding-top: 40px;
+    min-height: 0;
+  }
+
+  .popover-frame {
+    width: min(340px, calc(100vw - 2 * var(--gutter) - 16px));
+  }
+
+  .lede {
+    font-size: 18px;
+  }
+
+  .opener {
+    padding-top: 32px;
+    padding-bottom: 28px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar {
+    transition: none;
+  }
+}
