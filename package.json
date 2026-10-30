@@ -1,0 +1,16 @@
+{
+  "name": "overnight",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "tauri": "PATH=\"$HOME/.cargo/bin:/opt/homebrew/opt/rustup/bin:$PATH\" tauri",
+    "dev": "npm run tauri dev",
+    "build": "npm run tauri build",
+    "icons": "python3 scripts/make-icons.py && npx tauri icon app-icon.png && rm -rf src-tauri/icons/android src-tauri/icons/ios"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  },
+  "description": "Menu bar app that keeps the Mac awake overnight while Claude works"
+}

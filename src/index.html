@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Overnight</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script type="module" src="main.js" defer></script>
+  </head>
+  <body>
+    <div class="panel">
+      <header class="hero" id="hero" data-state="off">
+        <div class="hero-top">
+          <svg class="moon" viewBox="0 0 36 36" aria-hidden="true">
+            <path class="moon-body" d="M17 6a13 13 0 1 0 12.9 14.6A11 11 0 0 1 17.4 6Z" />
+            <path class="moon-star" d="M28.5 2.5l1.1 3.9 3.9 1.1-3.9 1.1-1.1 3.9-1.1-3.9-3.9-1.1 3.9-1.1z" />
+          </svg>
+          <div class="hero-text" aria-live="polite">
+            <h1 id="status">Starting</h1>
+            <p id="detail"></p>
+            <p id="hero-stats" class="hero-stats" hidden></p>
+          </div>
+        </div>
+        <button class="hero-note" id="hero-note" hidden>
+          <span id="hero-note-text"></span>
+          <span class="go">Show</span>
+        </button>
+        <button id="arm" class="btn primary">Keep awake tonight</button>
+        <button class="link hero-hide" id="morning-hide" hidden>Hide this summary</button>
+        <p id="error" class="error" role="alert" hidden></p>
+      </header>
+
+      <nav class="tabs" role="tablist" aria-label="Sections">
+        <button role="tab" id="tab-btn-tonight" aria-controls="tab-tonight" data-tab="tonight" aria-selected="true">Tonight</button>
+        <button role="tab" id="tab-btn-storage" aria-controls="tab-storage" data-tab="storage" aria-selected="false">
+          Storage<span class="tab-dot" id="storage-dot" hidden><span class="sr-only">, low on space</span></span>
+        </button>
+        <button role="tab" id="tab-btn-log" aria-controls="tab-log" data-tab="log" aria-selected="false">Log</button>
+      </nav>
+
+      <main>
+        <section id="tab-tonight" role="tabpanel" aria-labelledby="tab-btn-tonight">
+          <div class="group">
+            <div class="seg" role="radiogroup" aria-label="Stay awake">
+              <button data-mode="claude" role="radio">While Claude works</button>
+              <button data-mode="night" role="radio">All night</button>
+            </div>
+            <p class="hint" id="mode-hint"></p>
+            <div class="rows">
+              <label class="row" id="wait-reset-row">
+                <span class="label">
+                  Wait for usage-limit resets
+                  <span class="sub">Stays awake until 10 minutes after a reset, so Claude can continue.</span>
+                </span>
+                <input type="checkbox" class="switch" id="wait-reset" />
+              </label>
+              <label class="row">
+                <span class="check"><input type="checkbox" id="stop-enabled" /> Stop at</span>
+                <input type="time" id="stop-at" />
+              </label>
+            </div>
+          </div>
+
+          <h2>Claude <span class="pill" id="claude-pill">idle</span></h2>
+          <div class="callout" id="limit" tabindex="-1" hidden>
+            <strong id="limit-title"></strong>
+            <p id="limit-text"></p>
+            <details class="fix" id="limit-fix" hidden>
+              <summary id="limit-fix-title">Make it continue by itself next time</summary>
+              <ul class="steps">
+                <li>
+                  <b>In the Claude desktop app:</b> when the usage-limit card appears, tick
+                  <b>Auto-continue when limits reset</b>.
+                </li>
+                <li>
+                  <b>In Claude Code:</b> paste this prompt into a new Claude session. Claude checks
+                  the settings that control auto-continue and shows each change before saving it.
+                  <textarea id="fix-prompt" rows="3" readonly aria-label="Prompt to paste into Claude"></textarea>
+                  <button class="btn secondary small" id="copy-fix">Copy prompt</button>
+                </li>
+              </ul>
+            </details>
+          </div>
+          <div class="group">
+            <ul class="sessions" id="sessions"></ul>
+            <p class="hint" id="claude-meta"></p>
+            <div class="rows">
+              <label class="row">
+                <span>Claude is idle after</span>
+                <span class="field"><input type="number" id="idle" min="1" max="240" /> min</span>
+              </label>
+              <label class="row">
+                <span class="label">
+                  Notify me when Claude goes idle
+                  <span class="sub">It's usually done or waiting for your reply.</span>
+                </span>
+                <input type="checkbox" class="switch" id="notify-idle" />
+              </label>
+            </div>
+          </div>
+
+          <h2>Guards</h2>
+          <div class="group rows">
+            <div class="row"><span>Battery</span><span class="value" id="battery"></span></div>
+            <label class="row">
+              <span>Let it sleep below</span>
+              <span class="field"><input type="number" id="floor" min="5" max="90" />%</span>
+            </label>
+            <div class="row"><span>Temperature</span><span class="value" id="thermal"></span></div>
+            <label class="row">
+              <span>Let it sleep if it runs hot</span>
+              <input type="checkbox" class="switch" id="thermal-guard" />
+            </label>
+            <div class="row"><span>Lid</span><span class="value" id="lid"></span></div>
+          </div>
+
+          <h2>Phone</h2>
+          <div class="group rows">
+            <label class="row">
+              <span class="label">
+                Send alerts to my phone
+                <span class="sub">Overnight's alerts, through the free ntfy app. They never name a session or project.</span>
+              </span>
+              <input type="checkbox" class="switch" id="phone" />
+            </label>
+            <div id="phone-setup" hidden>
+              <div class="row stack">
+                <label class="label" for="ntfy-url">
+                  Topic
+                  <span class="sub">In the ntfy app on your phone, tap + and subscribe to this topic. Anyone who knows it can read your alerts, so keep the random name.</span>
+                </label>
+                <div class="topic">
+                  <input type="text" id="ntfy-url" spellcheck="false" autocomplete="off" />
+                  <button class="btn secondary small" id="copy-topic">Copy topic name</button>
+                </div>
+              </div>
+              <label class="row">
+                <span class="label">
+                  Only when I'm away
+                  <span class="sub">The lid is closed, or nobody has typed or moved the mouse for 5 min.</span>
+                </span>
+                <input type="checkbox" class="switch" id="phone-away" />
+              </label>
+              <div class="row">
+                <button class="link" id="phone-test">Send a test alert</button>
+                <span class="value" id="phone-result" role="status"></span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="tab-storage" role="tabpanel" aria-labelledby="tab-btn-storage" hidden>
+          <div class="group">
+            <div class="disk-head">
+              <strong id="disk-free"></strong>
+              <span id="disk-total"></span>
+            </div>
+            <div class="bar"><div id="disk-bar"></div></div>
+            <p class="hint" id="disk-hint"></p>
+            <div class="rows">
+              <label class="row">
+                <span>Warn below</span>
+                <span class="field"><input type="number" id="warn-gb" min="1" max="4000" /> GB</span>
+              </label>
+            </div>
+          </div>
+
+          <h2>What's piling up <button class="link" id="scan">Scan</button></h2>
+          <div class="group">
+            <ul class="places" id="places"></ul>
+            <p class="hint" id="scan-meta"></p>
+          </div>
+
+          <button id="cleanup" class="btn secondary wide">Ask Claude to clean up</button>
+          <p class="hint center" id="cleanup-hint">Opens Claude Code in Terminal so you can watch it work and answer its questions.</p>
+          <details class="request">
+            <summary>Edit the request</summary>
+            <textarea id="cleanup-prompt" rows="3"></textarea>
+          </details>
+        </section>
+
+        <section id="tab-log" role="tabpanel" aria-labelledby="tab-btn-log" hidden>
+          <div class="group summary" id="summary"></div>
+          <ul class="timeline" id="events"></ul>
+          <button class="link" id="reveal-log">Show log file</button>
+        </section>
+      </main>
+
+      <footer>
+        <span id="helper"></span>
+        <button class="link" id="quit">Quit</button>
+      </footer>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,1045 @@
+:root {
+  --bg: #f2f2f7;
+  --card: #ffffff;
+  --line: rgba(0, 0, 0, 0.08);
+  --text: #1c1c1e;
+  --muted: #6e6e73;
+  --faint: #aeaeb2;
+  --accent: #5856d6;
+  --accent-soft: rgba(88, 86, 214, 0.12);
+  --green: #34c759;
+  --orange: #ff9500;
+  --red: #ff3b30;
+  /* Status colors for small text; the bright ones above are too faint on white. */
+  --green-text: #1d7a35;
+  --orange-text: #a35200;
+  --red-text: #c41e14;
+  /* Accent behind white text (filled buttons), and accent as text or focus ring. */
+  --accent-fill: #5856d6;
+  --accent-text: #5856d6;
+  --night-a: #23264f;
+  --night-b: #3a316f;
+  /* Standing by: the same night, without its glow. Morning: night warming to dawn. */
+  --dusk-a: #2a2d3b;
+  --dusk-b: #3f4459;
+  --dawn: #c9875a;
+  --moon: #f7d680;
+  --control: rgba(118, 118, 128, 0.12);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1c1c1e;
+    --card: #2c2c2e;
+    --line: rgba(255, 255, 255, 0.08);
+    --text: #f2f2f7;
+    --muted: #a1a1a6;
+    --faint: #636366;
+    --accent: #7d7aff;
+    --accent-soft: rgba(125, 122, 255, 0.18);
+    --green: #30d158;
+    --orange: #ff9f0a;
+    --red: #ff453a;
+    --green-text: #30d158;
+    --orange-text: #ff9f0a;
+    --red-text: #ff6961;
+    --accent-fill: #5e5ce6;
+    --accent-text: #a5a3ff;
+    --control: rgba(118, 118, 128, 0.24);
+    color-scheme: dark;
+  }
+}
+
+/* Keep in step with the block above: one is the system setting, one the preview's ?theme=dark. */
+
+:root[data-theme="dark"] {
+  --bg: #1c1c1e;
+  --card: #2c2c2e;
+  --line: rgba(255, 255, 255, 0.08);
+  --text: #f2f2f7;
+  --muted: #a1a1a6;
+  --faint: #636366;
+  --accent: #7d7aff;
+  --accent-soft: rgba(125, 122, 255, 0.18);
+  --green: #30d158;
+  --orange: #ff9f0a;
+  --red: #ff453a;
+  --green-text: #30d158;
+  --orange-text: #ff9f0a;
+  --red-text: #ff6961;
+  --accent-fill: #5e5ce6;
+  --accent-text: #a5a3ff;
+  --control: rgba(118, 118, 128, 0.24);
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: transparent;
+  font: 13px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
+}
+
+.panel {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+
+/* Hero */
+
+.hero {
+  margin: 10px 10px 0;
+  padding: 14px;
+  border-radius: 10px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  transition: background 0.3s;
+}
+
+.hero[data-state="on"],
+.hero[data-state="standby"],
+.hero[data-state="morning"] {
+  border-color: transparent;
+  color: #fff;
+}
+
+/* Holding: the full night. */
+.hero[data-state="on"] {
+  background: linear-gradient(160deg, var(--night-a), var(--night-b));
+}
+
+/* Armed but letting the Mac sleep: the same night, unlit. */
+.hero[data-state="standby"] {
+  background: linear-gradient(160deg, var(--dusk-a), var(--dusk-b));
+}
+
+/* The morning after a run: the night warming into dawn at the bottom edge. */
+.hero[data-state="morning"] {
+  background: linear-gradient(172deg, var(--night-a) 0%, var(--night-b) 55%, var(--dawn) 140%);
+}
+
+.hero-top {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.moon {
+  width: 40px;
+  height: 40px;
+  flex: none;
+}
+
+.moon-body {
+  fill: none;
+  stroke: var(--faint);
+  stroke-width: 2.2;
+}
+
+.moon-star {
+  fill: var(--moon);
+  opacity: 0;
+}
+
+.hero[data-state="standby"] .moon-body {
+  fill: none;
+  stroke: rgba(247, 214, 128, 0.7);
+}
+
+.hero[data-state="morning"] .moon-body {
+  fill: rgba(247, 214, 128, 0.85);
+  stroke: none;
+}
+
+.hero[data-state="on"] .moon-body {
+  fill: var(--moon);
+  stroke: none;
+  filter: drop-shadow(0 0 6px rgba(247, 214, 128, 0.55));
+}
+
+.hero[data-state="on"] .moon-star {
+  opacity: 1;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.hero p {
+  margin: 2px 0 0;
+  color: var(--muted);
+}
+
+.hero[data-state="on"] p,
+.hero[data-state="standby"] p,
+.hero[data-state="morning"] p {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.hero .hero-stats {
+  margin-top: 6px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  font-variant-numeric: tabular-nums;
+}
+
+.hero .btn {
+  margin-top: 12px;
+  width: 100%;
+}
+
+/* What needs the user, from the same state as the Claude pill. */
+.hero-note {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  margin-top: 12px;
+  padding: 7px 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  border: 0;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--orange) 14%, var(--card));
+  color: var(--orange-text);
+  cursor: default;
+}
+
+.hero-note .go {
+  font-weight: 500;
+}
+
+.hero[data-state="on"] .hero-note,
+.hero[data-state="standby"] .hero-note,
+.hero[data-state="morning"] .hero-note {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.hero-note:not([hidden]) + .btn {
+  margin-top: 8px;
+}
+
+.hero-hide {
+  display: block;
+  margin: 8px auto 0;
+  font-size: 12px;
+}
+
+.hero[data-state="morning"] .hero-hide {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.error {
+  margin: 8px 0 0;
+  color: var(--red-text);
+}
+
+.hero[data-state="on"] .error,
+.hero[data-state="standby"] .error,
+.hero[data-state="morning"] .error {
+  color: #ffb4ae;
+}
+
+/* Buttons */
+
+.btn {
+  font: inherit;
+  font-weight: 600;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: default;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+}
+
+.btn.primary {
+  background: var(--accent-fill);
+  color: #fff;
+}
+
+.btn.primary:active:not(:disabled) {
+  filter: brightness(0.92);
+}
+
+.btn.quiet {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.btn.secondary {
+  background: var(--card);
+  color: var(--accent-text);
+  border: 1px solid var(--line);
+}
+
+.btn.wide {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.link {
+  font: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--accent-text);
+  cursor: default;
+}
+
+.link:disabled {
+  color: var(--faint);
+}
+
+/* Tabs */
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  margin: 10px 10px 0;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--control);
+}
+
+.tabs button {
+  flex: 1;
+  font: inherit;
+  font-weight: 500;
+  border: 0;
+  border-radius: 6px;
+  padding: 4px 0;
+  background: none;
+  color: var(--text);
+  position: relative;
+}
+
+.tabs button[aria-selected="true"] {
+  background: var(--card);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.tab-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--orange);
+  vertical-align: 2px;
+  margin-left: 2px;
+}
+
+/* Content */
+
+main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 10px 4px;
+}
+
+h2 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 14px 4px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+h2 .link {
+  margin-left: auto;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.group {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.group.rows {
+  padding: 0 12px;
+}
+
+.rows .row:first-child {
+  border-top: 0;
+}
+
+.group > .rows {
+  margin-top: 6px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 34px;
+  border-top: 1px solid var(--line);
+}
+
+.group > .rows .row:first-child {
+  border-top: 1px solid var(--line);
+}
+
+.value {
+  color: var(--muted);
+  text-align: right;
+}
+
+.value.warn {
+  color: var(--orange-text);
+}
+
+.value.bad {
+  color: var(--red-text);
+}
+
+.value.ok {
+  color: var(--green-text);
+}
+
+.field {
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+input[type="number"],
+input[type="time"],
+input[type="text"],
+textarea {
+  font: inherit;
+  color: var(--text);
+  background: var(--control);
+  border: 0;
+  border-radius: 6px;
+  padding: 3px 6px;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+input[type="number"] {
+  width: 52px;
+  text-align: right;
+}
+
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* One focus ring for every control; white on the hero's night backgrounds. */
+:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+
+input:focus-visible,
+textarea:focus-visible {
+  outline-offset: 1px;
+}
+
+.hero[data-state="on"] :focus-visible,
+.hero[data-state="standby"] :focus-visible,
+.hero[data-state="morning"] :focus-visible {
+  outline-color: #fff;
+}
+
+/* Text for screen readers only. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* No transitions while the page draws its first state (it's new on every
+   open), or for anyone who asked for less motion. The state still changes. */
+.booting *,
+.booting *::before,
+.booting *::after {
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .switch,
+  .switch::after,
+  .hero,
+  .bar > div {
+    transition: none;
+  }
+}
+
+input[type="checkbox"]:not(.switch) {
+  accent-color: var(--accent);
+  margin: 0;
+}
+
+.switch {
+  appearance: none;
+  width: 32px;
+  height: 19px;
+  border-radius: 10px;
+  background: var(--control);
+  position: relative;
+  margin: 0;
+  flex: none;
+  transition: background 0.2s;
+}
+
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s;
+}
+
+.switch:checked {
+  background: var(--green);
+}
+
+.switch:checked::after {
+  transform: translateX(13px);
+}
+
+.hint {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* A row label with a second line that says what the setting is for. */
+.row .label {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 0;
+}
+
+.sub {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Phone alerts: a row whose field sits under its label. */
+.row.stack {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  padding: 8px 0;
+}
+
+.row.stack .label {
+  padding: 0;
+}
+
+#phone-setup .row:first-child {
+  border-top: 1px solid var(--line);
+}
+
+.topic {
+  display: flex;
+  gap: 6px;
+}
+
+.topic input {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 6px;
+  font: 12px ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.topic .btn.small {
+  margin-top: 0;
+}
+
+#phone-test {
+  flex: none;
+}
+
+#phone-result {
+  font-size: 12px;
+  min-width: 0;
+  padding: 6px 0;
+}
+
+.hint.center {
+  text-align: center;
+  margin: 6px 8px 0;
+}
+
+/* Segmented control */
+
+.seg {
+  display: flex;
+  padding: 2px;
+  gap: 2px;
+  border-radius: 8px;
+  background: var(--control);
+}
+
+.seg button {
+  flex: 1;
+  font: inherit;
+  font-weight: 500;
+  border: 0;
+  border-radius: 6px;
+  padding: 5px 0;
+  background: none;
+  color: var(--text);
+}
+
+/* The same raised segment as the tabs, so the only filled accent is the main button. */
+.seg button[aria-checked="true"] {
+  background: var(--card);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  font-weight: 600;
+}
+
+/* Claude sessions */
+
+.pill {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--control);
+  color: var(--muted);
+}
+
+.pill.on {
+  background: color-mix(in srgb, var(--green) 18%, transparent);
+  color: var(--green-text);
+}
+
+.pill.warn {
+  background: color-mix(in srgb, var(--orange) 18%, transparent);
+  color: var(--orange-text);
+}
+
+.pill.bad {
+  background: color-mix(in srgb, var(--red) 15%, transparent);
+  color: var(--red-text);
+}
+
+.sessions,
+.places,
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sessions li {
+  display: grid;
+  grid-template-columns: 8px 1fr auto;
+  align-items: center;
+  column-gap: 8px;
+  padding: 5px 0;
+}
+
+.sessions li + li {
+  border-top: 1px solid var(--line);
+}
+
+.sessions li > div {
+  min-width: 0;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--faint);
+}
+
+.dot.on {
+  background: var(--green);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 20%, transparent);
+}
+
+.s-title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.s-project {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.s-ago {
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.empty {
+  color: var(--muted);
+  padding: 4px 0;
+}
+
+.sessions li.empty,
+.timeline li.empty {
+  display: block;
+}
+
+/* Storage */
+
+.disk-head {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.disk-head strong {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.disk-head span {
+  color: var(--muted);
+}
+
+.bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--control);
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.bar > div {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent);
+  transition: width 0.3s;
+}
+
+.bar.low > div {
+  background: var(--orange);
+}
+
+.places li {
+  padding: 6px 0;
+}
+
+.places li + li {
+  border-top: 1px solid var(--line);
+}
+
+.p-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.p-size {
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.p-path {
+  font-size: 11px;
+  color: var(--muted);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.p-bar {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--accent-soft);
+  margin-top: 4px;
+}
+
+.p-bar > div {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+.request {
+  margin: 10px 4px 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.request summary {
+  cursor: default;
+}
+
+.request textarea {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  resize: none;
+}
+
+/* Log */
+
+.summary h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.summary .when {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.stat b {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat span {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.ended {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.timeline {
+  margin: 10px 4px 8px;
+}
+
+.timeline li {
+  display: grid;
+  grid-template-columns: 58px 8px 1fr;
+  align-items: baseline;
+  gap: 6px;
+  padding: 3px 0;
+}
+
+.t-time {
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.t-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--faint);
+  align-self: center;
+}
+
+.t-dot.accent {
+  background: var(--accent);
+}
+
+.t-dot.green {
+  background: var(--green);
+}
+
+.t-dot.orange {
+  background: var(--orange);
+}
+
+.t-dot.red {
+  background: var(--red);
+}
+
+/* A day header spans the row instead of sitting in the time column. */
+.timeline li.t-day {
+  display: block;
+}
+
+.t-day {
+  grid-column: 1 / -1;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  padding-top: 6px;
+}
+
+#reveal-log {
+  margin: 0 4px 6px;
+  font-size: 12px;
+}
+
+/* Footer */
+
+footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-top: 1px solid var(--line);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+footer .link {
+  font-size: 12px;
+}
+
+/* Usage-limit callout */
+
+.callout {
+  --tone: var(--orange-text);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: color-mix(in srgb, var(--orange) 12%, var(--card));
+  border: 1px solid color-mix(in srgb, var(--orange) 35%, transparent);
+}
+
+.callout.missed {
+  --tone: var(--red-text);
+  background: color-mix(in srgb, var(--red) 10%, var(--card));
+  border-color: color-mix(in srgb, var(--red) 35%, transparent);
+}
+
+.callout strong {
+  font-weight: 600;
+}
+
+/* Secondary text takes the callout's hue rather than gray, for contrast on the tint. */
+.callout p,
+.steps {
+  color: color-mix(in srgb, var(--text) 78%, var(--tone));
+  font-size: 12px;
+}
+
+.callout p {
+  margin: 4px 0 0;
+}
+
+.fix {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--tone) 25%, transparent);
+  font-size: 12px;
+}
+
+.fix summary {
+  cursor: default;
+  font-weight: 600;
+  color: var(--tone);
+}
+
+.fix summary:focus-visible {
+  outline: 2px solid var(--accent-text);
+  border-radius: 4px;
+}
+
+.steps {
+  margin: 6px 0 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.steps li + li {
+  margin-top: 8px;
+}
+
+.steps b {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.callout textarea {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  resize: none;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.btn.small {
+  margin-top: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.s-limit {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 5px;
+  color: var(--orange-text);
+  background: color-mix(in srgb, var(--orange) 15%, transparent);
+}
+
+.s-limit.missed {
+  color: var(--red-text);
+  background: color-mix(in srgb, var(--red) 15%, transparent);
+}
