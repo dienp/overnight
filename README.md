@@ -34,7 +34,7 @@ Nothing is installed system-wide. There's no sudoers entry, launch daemon or ker
 
 ## How Overnight decides Claude is working
 
-Claude counts as working when a Claude Code process is running and one of two things is true: a session under `~/.claude/projects` recorded something within the idle time, or the Claude process tree, including its builds, tests and tools, is using at least 20% of a CPU core. Sessions in Terminal and in the Claude desktop app both count.
+Claude counts as working when a Claude Code process is running and one of two things is true: a session under `~/.claude/projects` recorded something within the idle time, or one session's process tree, including its builds, tests and tools, has used at least 20% of a CPU core for 15 seconds. Each session counts on its own, because a dozen idle sessions together can pass 20% while none of them is doing anything. Sessions in Terminal and in the Claude desktop app both count.
 
 A recorded event is a timestamped record, such as a prompt, a reply, a tool result or a retry, or a write by one of the session's subagents. Overnight ignores the transcript file's modified time, because the Claude desktop app also appends untimed bookkeeping (titles, cost, artifact state) to sessions nobody is working in.
 

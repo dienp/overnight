@@ -14,9 +14,14 @@ use std::{
 };
 use sysinfo::{Pid, Process, ProcessRefreshKind, ProcessesToUpdate, System, UpdateKind};
 
-/// CPU across a Claude process tree (percent of one core) that counts as working,
-/// e.g. a long build or test run that writes nothing to the transcript.
+/// CPU in one Claude process tree (percent of one core) that counts as working,
+/// e.g. a long build or test run that writes nothing to the transcript. Each
+/// session's tree is judged on its own: an idle session uses a percent or two
+/// with its tools, and a dozen of them together pass 20% while nothing works.
 const BUSY_CPU: f32 = 20.0;
+/// How long a tree has to stay over BUSY_CPU, so a brief spike in an idle
+/// session doesn't count as work.
+const BUSY_FOR: Duration = Duration::from_secs(15);
 /// How far back the session list looks.
 const RECENT: Duration = Duration::from_secs(12 * 3600);
 const MAX_SESSIONS: usize = 6;
@@ -75,6 +80,8 @@ struct LimitHit {
 #[derive(Clone, Debug, Default, Serialize)]
 pub struct ClaudeInfo {
     pub processes: usize,
+    /// All Claude process trees together, for display. Activity goes by the
+    /// busiest single tree instead.
     pub busy_cpu: f32,
     pub active: bool,
     /// Seconds since the last transcript write or busy process tree.
@@ -103,6 +110,8 @@ pub struct Watcher {
     settings: PathBuf,
     meta: HashMap<PathBuf, Meta>,
     last_busy: Option<SystemTime>,
+    /// When some tree last went over BUSY_CPU, while it stays over.
+    busy_since: Option<SystemTime>,
 }
 
 impl Watcher {
@@ -113,6 +122,7 @@ impl Watcher {
             settings: home.join(".claude/settings.json"),
             meta: HashMap::new(),
             last_busy: None,
+            busy_since: None,
         }
     }
 
@@ -120,10 +130,10 @@ impl Watcher {
         let now = SystemTime::now();
         let since = |t: SystemTime| now.duration_since(t).unwrap_or_default();
 
-        let (processes, busy_cpu) = self.processes().unwrap_or_default();
+        let usage = self.processes().unwrap_or_default();
         // Without a running process there is nothing left to wait for.
-        let running = self.sys.is_none() || processes > 0;
-        if busy_cpu >= BUSY_CPU {
+        let running = self.sys.is_none() || usage.processes > 0;
+        if sustained(&mut self.busy_since, usage.busiest, now) {
             self.last_busy = Some(now);
         }
         // A session's activity is its newest timestamped record or subagent
@@ -165,12 +175,21 @@ impl Watcher {
         let limit = summarize_limits(&hits, local_now);
 
         let auto_continue = auto_continue(&self.settings);
-        ClaudeInfo { processes, busy_cpu, active, idle_secs, sessions, limit, auto_continue, fix_prompt: FIX_PROMPT }
+        ClaudeInfo {
+            processes: usage.processes,
+            busy_cpu: usage.total,
+            active,
+            idle_secs,
+            sessions,
+            limit,
+            auto_continue,
+            fix_prompt: FIX_PROMPT,
+        }
     }
 
     /// Counts Claude Code processes and sums CPU across them and everything
     /// they started (shells, builds, test runners, MCP servers).
-    fn processes(&mut self) -> Option<(usize, f32)> {
+    fn processes(&mut self) -> Option<Usage> {
         let sys = self.sys.as_mut()?;
         sys.refresh_processes_specifics(
             ProcessesToUpdate::All,
@@ -180,32 +199,17 @@ impl Watcher {
                 .with_exe(UpdateKind::OnlyIfNotSet)
                 .with_cmd(UpdateKind::OnlyIfNotSet),
         );
-        let procs = sys.processes();
-        let mut children: HashMap<Pid, Vec<Pid>> = HashMap::new();
-        for (pid, p) in procs {
-            if let Some(parent) = p.parent() {
-                children.entry(parent).or_default().push(*pid);
-            }
-        }
-        let roots: Vec<Pid> = procs
+        let procs: Vec<Proc> = sys
+            .processes()
             .iter()
-            .filter(|(_, p)| is_claude(p))
-            .map(|(pid, _)| *pid)
+            .map(|(pid, p)| Proc {
+                pid: pid.as_u32(),
+                parent: p.parent().map(Pid::as_u32),
+                cpu: p.cpu_usage(),
+                claude: is_claude(p),
+            })
             .collect();
-
-        let mut seen = HashSet::new();
-        let mut stack = roots.clone();
-        let mut cpu = 0.0;
-        while let Some(pid) = stack.pop() {
-            if !seen.insert(pid) {
-                continue;
-            }
-            cpu += procs.get(&pid).map_or(0.0, Process::cpu_usage);
-            if let Some(kids) = children.get(&pid) {
-                stack.extend(kids);
-            }
-        }
-        Some((roots.len(), cpu))
+        Some(tree_usage(&procs))
     }
 
     /// Session title, project folder and any pending usage limit, cached
@@ -360,6 +364,69 @@ fn summarize_limits(hits: &[LimitHit], now: DateTime<Local>) -> Option<Limit> {
     Some(Limit { state, resets_at: latest.resets_at, message: latest.message.clone(), sessions: pool.len() })
 }
 
+/// One process, as far as `tree_usage` cares.
+struct Proc {
+    pid: u32,
+    parent: Option<u32>,
+    cpu: f32,
+    claude: bool,
+}
+
+/// CPU use of the `claude` processes and everything they started.
+#[derive(Debug, Default)]
+struct Usage {
+    processes: usize,
+    /// Every tree together, each process counted once.
+    total: f32,
+    /// The busiest single tree. A tree inside another counts in both.
+    busiest: f32,
+}
+
+fn tree_usage(procs: &[Proc]) -> Usage {
+    let mut children: HashMap<u32, Vec<u32>> = HashMap::new();
+    let mut cpu: HashMap<u32, f32> = HashMap::new();
+    for p in procs {
+        cpu.insert(p.pid, p.cpu);
+        if let Some(parent) = p.parent {
+            children.entry(parent).or_default().push(p.pid);
+        }
+    }
+    let roots: Vec<u32> = procs.iter().filter(|p| p.claude).map(|p| p.pid).collect();
+    let mut usage = Usage { processes: roots.len(), ..Usage::default() };
+    let mut counted = HashSet::new();
+    for root in roots {
+        let mut seen = HashSet::new();
+        let mut stack = vec![root];
+        let mut tree = 0.0;
+        while let Some(pid) = stack.pop() {
+            if !seen.insert(pid) {
+                continue;
+            }
+            let c = cpu.get(&pid).copied().unwrap_or(0.0);
+            tree += c;
+            if counted.insert(pid) {
+                usage.total += c;
+            }
+            if let Some(kids) = children.get(&pid) {
+                stack.extend(kids);
+            }
+        }
+        usage.busiest = usage.busiest.max(tree);
+    }
+    usage
+}
+
+/// Whether a tree has stayed over BUSY_CPU for BUSY_FOR. `since` remembers
+/// when it went over, between polls.
+fn sustained(since: &mut Option<SystemTime>, busiest: f32, now: SystemTime) -> bool {
+    if busiest < BUSY_CPU {
+        *since = None;
+        return false;
+    }
+    let start = *since.get_or_insert(now);
+    now.duration_since(start).unwrap_or_default() >= BUSY_FOR
+}
+
 fn is_claude(p: &Process) -> bool {
     let name = p.name().to_string_lossy();
     if name == "claude" {
@@ -508,6 +575,68 @@ fn string_field(line: &str, key: &str) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn proc(pid: u32, parent: u32, cpu: f32, claude: bool) -> Proc {
+        Proc { pid, parent: Some(parent), cpu, claude }
+    }
+
+    /// A dozen idle sessions, each with a few tools, add up to more than 20%
+    /// of a core. That kept Overnight saying Claude was working all night.
+    #[test]
+    fn idle_sessions_together_are_not_busy() {
+        let mut procs = Vec::new();
+        for s in 0..13 {
+            let root = 1000 + s * 10;
+            procs.push(proc(root, 1, 1.2, true));
+            for t in 1..=3 {
+                procs.push(proc(root + t, root, 0.6, false));
+            }
+        }
+        let usage = tree_usage(&procs);
+        assert_eq!(usage.processes, 13);
+        assert!(usage.total > BUSY_CPU, "together {}", usage.total);
+        assert!(usage.busiest < BUSY_CPU, "busiest {}", usage.busiest);
+    }
+
+    #[test]
+    fn one_session_building_is_busy() {
+        let procs = vec![
+            proc(10, 1, 1.0, true),
+            proc(11, 10, 0.5, false),
+            proc(12, 11, 85.0, false), // cargo, two levels down
+            proc(20, 1, 1.0, true),
+            proc(30, 1, 40.0, false), // not Claude's
+        ];
+        let usage = tree_usage(&procs);
+        assert_eq!(usage.processes, 2);
+        assert!((usage.busiest - 86.5).abs() < 0.01);
+        assert!((usage.total - 87.5).abs() < 0.01);
+    }
+
+    /// `claude` started from inside another session's shell.
+    #[test]
+    fn nested_session_is_counted_once_in_total() {
+        let procs = vec![proc(10, 1, 2.0, true), proc(11, 10, 1.0, false), proc(12, 11, 30.0, true)];
+        let usage = tree_usage(&procs);
+        assert_eq!(usage.processes, 2);
+        assert!((usage.total - 33.0).abs() < 0.01);
+        assert!((usage.busiest - 33.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn a_spike_is_not_work() {
+        let t = SystemTime::UNIX_EPOCH + Duration::from_secs(1_000_000);
+        let at = |s: u64| t + Duration::from_secs(s);
+        let mut since = None;
+        assert!(!sustained(&mut since, 45.0, at(0)));
+        assert!(!sustained(&mut since, 3.0, at(10)));
+        assert!(!sustained(&mut since, 45.0, at(20)));
+        assert!(!sustained(&mut since, 30.0, at(30)));
+        assert!(sustained(&mut since, 30.0, at(40)));
+        assert!(sustained(&mut since, 90.0, at(50)));
+        assert!(!sustained(&mut since, 1.0, at(60)));
+        assert_eq!(since, None);
+    }
 
     /// The desktop app keeps appending untimed bookkeeping to idle sessions,
     /// which made a session that last spoke yesterday look busy.
